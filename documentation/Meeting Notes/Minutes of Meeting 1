@@ -1,0 +1,74 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [09/16/2024]
+Time: [12:00 PM – 12:55 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Erik Holtrop
+Kyler Kupp
+
+1. Agenda
+
+Introduction to the project
+gathering requirements
+analyzing current software from last year's group
+accessing previous respository
+
+2. Meeting Summary
+
+Introduction:
+
+The client, Dr. Asaph Cousins, is looking to make some modifications to a piece of existing software. The software is written in Python, which Dr. Cousins has limited knowledge of. The program has been worked on by 2 different groups in the past.
+The program takes input from a mass spectrometer by accessing data that is output by the spectrometer's proprietary software. The software measures the mass-to-charge ratio of ions in different concentrations of gas.
+It allows the user to calibrate, analyze, and export specific partitions of data.
+
+Dr. Cousins outlined the following goals:
+
+Fix simple bug
+Continue development of modules 2 and 3
+Add functionality for a second mass spectrometer (This mass spectrometer outputs data differently in a way that is not as easy to aggregate).
+
+Client’s Requirements:
+
+Fix simple calculation error within the next 2 weeks.
+Continue development of modules 2 and 3 in a way that results in a user friendly executable rather than a script.
+Add functionality for another mass spectrometer. This mass spectrometer outputs data differently and requires a different method of aggregation.
+
+Key Discussion Points:
+
+Discussion Point 1: Introduction/software explanation as described above.
+Discussion Point 2: Requirements as described above.
+Discussion Point 3: Acquiring previous repositories.
+Discussion Point 4: As a team, we should analyze the first group's code to get a better understanding of the program for our next meeting.
+Discussion Point 5: The program should be developed with the user in mind. Users of this software are not familiar with software development, so the program should be an easy to use executable rather than a script.
+Discussion Point 6: Lab meetings occur every 2 weeks on Wednesday at 9-11am. These meetings may be a good time to observe the software in use or present prototypes to lab students.
+
+Decisions Made:
+
+Meetings will recur weekly on Mondays at 2:00 PM
+Program will continue to use Python
+
+Action Items:
+
+Action Item 1: Project team to analyze existing code – Due by 09/23/2024
+Action Item 2: Project team to analyze given powerpoint explaining the software usage – Due by 09/23/2024
+
+3. Project Milestones Discussed
+
+N/A
+
+4. Next Steps
+
+Analyze Existing code
+Gain understanding of current software
+
+5. Next Meeting
+
+Date: [09/23/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [09/19/2024]

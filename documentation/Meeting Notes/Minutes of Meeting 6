@@ -1,0 +1,58 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [10/21/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Test new module 3 prototypes
+Discuss module 3 calculations
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Derivative graph must use natural log
+Update prototype to use correct data point interval data
+Update graph labels
+Add a column and string input for 'Sample Name'
+Fix bug that prevents loading new acquisition after stopping plotting
+
+Key Discussion Points:
+
+Discussion Point 1: Excel-sheet-based prototype looks correct.
+Discussion Point 2: Researcher will double check Excel-sheet-based prototype accuracy.
+Discussion Point 3: It may be more statistically correct to apply natural log after calculating the derivative rather than before.
+Discussion Point 4: Team members should be given access to lab computer for module 4 testing
+
+Decisions Made:
+
+We will explore applying natural log for graph normalization after calculating derivative.
+
+Action Items:
+
+Action Item 1: Update prototype accuracy – 10/28/2024
+Action Item 2: Test post-calculation log application using excel – 10/28/2024
+
+4. Next Steps
+
+Complete action items
+Get remote access to lab computer for module 4 development
+
+5. Next Meeting
+
+Go over calculation findings
+Ensure access to lab computer system
+
+Date: [10/28/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [10/24/2024]

@@ -1,0 +1,64 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [10/14/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Test module 3 prototype
+Discuss module 3 requirements
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Ensure LN(Atom%) calculation is using natural log
+Update derivative calculation to use moving average of around 10-13 data points
+Update graph labels
+In the data export section, remove unnecessary columns
+Add a column and string input for 'Sample Name'
+Fix bug that prevents loading new acquisition after stopping plotting
+
+Key Discussion Points:
+
+Discussion Point 1: LN(Atom%) Graph looks good and holes in graph are okay.
+Discussion Point 2: Derivative graph has too much noise and its calculations should be verified.
+Discussion Point 3: Bug prevents loading a new acquisition after plotting has ceased.
+Discussion Point 4: Module 4 should be reviewed since it will be our next point of focus.
+
+Decisions Made:
+
+After the requirements for module 3 are completed, we will begin working on module 4.
+
+Action Items:
+
+Action Item 1: Ensure LN(Atom%) calculation is using natural log – 10/21/2024
+Action Item 1: Update derivative calculation to use moving average of around 10-13 data points – 10/21/2024
+Action Item 1: Update graph labels – 10/21/2024
+Action Item 1: In the data export section, remove unnecessary columns – No Due Date
+Action Item 1: Add a column and string input for 'Sample Name' – No Due Date
+Action Item 1: Fix bug that prevents loading new acquisition after stopping plotting – No Due Date
+
+
+4. Next Steps
+
+Complete action items
+Look over module 4 in preperation
+
+5. Next Meeting
+
+Discuss updates to module 3
+Assess next steps in module 4
+
+Date: [10/21/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [10/14/2024]

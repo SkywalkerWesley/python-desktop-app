@@ -1,0 +1,55 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [4/9/2025]
+Time: [3:00 PM – 4:00 PM]
+Location: [Abelson 406BA]
+
+Attendees: 
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Go over data transformation documentation
+Clarify auto-adjusting plotting speed functionality
+Discuss plans moving forward
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+- Ensure documentation is prepared for future teams to pickup the project and understand the changes we made.
+
+Key Discussion Points:
+
+Discussion Point 1: No hidden data transformations were found in the implementation to explain the discrepency between units listed on Von's document and what we observe on the alternate lab computer. Luckily the exact
+unit of measurement is not a priority, moreso that there is a linear correalation and observable patterns in the data.
+Discussion Point 2: The auto-adjusting plotting speed works in such a way that it will effectively match the plotting speed for data from both mass spectrometers 1 and 2.
+Discussion Point 3: Client is satisfied with the final product and future meetings will be on an as-needed basis.
+
+Decisions Made:
+
+Client is satisfied with state of project
+Future meetings will be on as-needed basis
+
+Action Items:
+
+Action Item 1: Polish documentation
+
+4. Next Steps
+
+- Complete documentation
+- Maybe touch base before end of year
+
+5. Next Meeting
+
+as-needed
+
+Date: N/A
+Time: N/A
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [4/10/2025]

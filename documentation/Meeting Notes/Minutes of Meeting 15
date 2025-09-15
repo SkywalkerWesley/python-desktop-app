@@ -1,0 +1,70 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [3/19/2025]
+Time: [3:00 PM – 4:00 PM]
+Location: [Abelson 406BA]
+
+Attendees: 
+Asaph Cousins
+Kyler Kupp
+
+1. Agenda
+
+Review UI changes
+Discuss Module 2 latency/frequency
+Review dynamic plotting speed functionality
+Discuss future documentation
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+- Create developer-facing documentation that future teams can use to understand the codebase and our implementations.
+- Create document going over equations and transformations applied to data being converted via module 4. The data visualized using module 2 with the second mass spectrometer correlates to the data observed on the computer that is connected to the mass spec via fiber optic cable. However,
+it is multiplied by some factor. It would be helpful for Dr. Cousins to know what formulas are being applied to the raw data in module 4's transformation. It was speculated that the difference may be due to module 4 outputing millivolts while the other computer connected to the mass spec
+outputs milliamps.
+
+Key Discussion Points:
+
+Discussion Point 1: The user-interface is satisfactory as-is.
+Discussion Point 2: Dr. Cousins tested Module 2 and is able to see accurate data and observe patterns/trends successfully. However, data conversion through module 4 does have the limitations of slow data frequency and slight latency as previously discussed. With this being said, Dr. Cousins
+understands that we are not focused on new developments at this point in development and that the slow data frequency may be a hardware limitation.
+Discussion Point 3: The dynamically adjusting plotting speed works as intended. However, from our brief testing, it appears that the plotting speed may be adjusting to a rate that is lower than necessary, resulting in delay. Using the old version of module 2 in which plotting stops
+when the end of file is reached, we were able to maintain a greater plotting speed than what was set by the new dynamically adjusting version of Module 2. It's possible that this was due to limited testing, but Dr. Cousins suggested instead of incrementally decreasing the rate of
+plotting, to instead set the plotting speed to the maximum observed time interval between two continuous data points when the end of the file is reached. We discussed that this approach would likely also accumulate delay overtime whenever new datapoints arrive at an interval less than
+the maximum.
+Discussion Point 4: Dr. Cousins is mainly focused on creating developer-facing documentation since he is capable of creating user manuals/demo videos himself. He would like us to consolidate our knowledge to make it easy for future groups to continue work on the project.
+Discussion Point 5: The data visualized using module 2 with the second mass spectrometer correlates to the data observed on the computer that is connected to the mass spec via fiber optic cable (across from the computer running Module 2). However,
+the values on the curve are multiplied by some factor. It would be helpful for Dr. Cousins to know what formulas are being applied to the raw data in module 4's transformation. It was speculated that the difference may be due to module 4 outputing millivolts while the other 
+computer connected to the mass spec outputs milliamps.
+
+
+Decisions Made:
+
+Current UI is satisfactory
+Developer-facing documentation should be created
+Implementation of the dynamic plotting speed should be reviewed
+
+Action Items:
+
+Action Item 1: Review functionality of dynamic plotting speed. – 3/26/2025
+Action Item 2: Create document detailing how raw data is transformed in module 4. – 3/26/2025
+Action Item 3: Plan additional documentation
+
+4. Next Steps
+
+- Complete action items
+- Potentially look into Module 4 frequency and latency limitations if time allows, although no majaor developments are planned. We should also document the details of these limitations for future groups.
+
+5. Next Meeting
+
+Discuss progress on documentation
+Ensure functionality of current modules and go over any desired finishing touches
+
+Date: [3/26/2025]
+Time: [3:00 PM]
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [3/19/2025]

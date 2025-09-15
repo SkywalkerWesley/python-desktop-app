@@ -1,0 +1,53 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [1/30/2025]
+Time: [3:00 PM – 4:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Erik Holtrop
+Kyler Kupp
+
+1. Agenda
+
+Demo Module 4 Prototype
+Get feedback
+Discuss next steps
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Module 4's data conversion should be integrated into modules 1 and 2.
+
+Key Discussion Points:
+
+Discussion Point 1: Prototype appears functional, aside from bug.
+Discussion Point 2: Prototype currently stops converting data when it catches up with stream
+Discussion Point 3: The data conversion from Module 4 should be integrated into modules 1 and 2
+Discussion Point 4: Users should be prompted to ensure that they have opened EZView with the correct settings before proceeding.
+
+Decisions Made:
+
+We should integrate data conversion in to modules 1 and 2.
+
+Action Items:
+
+Action Item 1: Fix bug and integrate data conversion into modules 1 & 2 – 2/19/2025
+
+4. Next Steps
+
+Build and demo new prototype
+
+5. Next Meeting
+
+Test prototype
+
+Date: [2/19/2025]
+Time: [3:00 PM]
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [2/16/2025]

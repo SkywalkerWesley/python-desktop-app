@@ -1,0 +1,59 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [2/26/2025]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Erik Holtrop
+Kyler Kupp
+
+1. Agenda
+
+Demo Modules 1 & 2 Data with reporting frequency increase
+Discuss bug fix made in modules 1-3.
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Module 4's data conversion must be integrated into modules 1 and 2.
+Data must be converted at a high frequency for real-time tracking
+
+Key Discussion Points:
+
+Discussion Point 1: Datapoint frequency has improved and may be usable now.
+Discussion Point 2: Greater datapoint frequency would be ideal.
+Discussion Point 3: Data input frequency seems to be limited by EZ-Tap device.
+Discussion Point 4: Automatic dynamically adjusting plotting speed would be convenient for continuous plotting.
+Discussion Point 5: We should ensure that each column reported accurately corresponds to the correct data output.
+Discussion Point 6: A bug-fix was made to modules 1-3 which were not accounting for time between csv files. This caused the plotted output data to be condensed into roughly 9/10 of what it should have been. This fix will effect calculated rates making them more accurate.
+
+Decisions Made:
+
+The client will test the bug-fix made to modules 1-3 as well as the updated data conversion in modules 1 & 2.
+The team will work on the action items listed below.
+
+Action Items:
+
+Action Item 1: Implement dynamically adjusting plotting speed that matches incoming data once the graph has caught up to the input stream. – 3/05/2025
+Action Item 2: Research possibility of increasing frequency of incoming data from EZ-Tap. – 3/05/2025
+
+4. Next Steps
+
+Complete action items
+
+5. Next Meeting
+
+Discuss research findings
+Demo and test dynamic plotting speed
+
+
+Date: [3/5/2025]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [2/27/2025]

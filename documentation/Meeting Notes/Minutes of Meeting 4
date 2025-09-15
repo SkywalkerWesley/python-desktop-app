@@ -1,0 +1,58 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [10/5/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+
+1. Agenda
+
+Discuss current module 3 derivative calculations
+Discuss desired module 3 derivative calculations
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Adjust atom percent graph to reflect the natural log of the atom percent
+Adjust derivative graph to reflect the first order derivative of the natural log of the atom percent
+
+Key Discussion Points:
+
+Discussion Point 1: Currently, the atom percent is calculated as (49/(45 + 47 + 49))*100 .
+Discussion Point 2: Currently, the derivative is not correctly calculated. It is plotting (previous atom % - current atom %) or the difference between consecutive data points.
+Discussion Point 3: Atom percent graph should reflect the natural log of the atom percent.
+Discussion Point 4: Atom percent does not need to be multiplied by factor of 100.
+Discussion Point 5: Derivative graph should reflect the first order derivative of the natural log of the atom percent.
+Discussion Point 6: The next step will likely be increasing the usability of the mean bars in module 3.
+
+Decisions Made:
+
+Adjust atom percent graph to reflect the natural log of the atom percent
+Adjust derivative graph to reflect the first order derivative of the natural log of the atom percent
+
+Action Items:
+
+Action Item 1: Adjust calculations and create executable for testing – No Due Date
+
+3. Project Milestones Discussed
+
+Sprint 1
+
+4. Next Steps
+
+Adjust calculations and create executable for testing
+
+5. Next Meeting
+
+Continue ensuring that atom percent and its derivative are plotted correctly
+
+Date: [10/14/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [10/4/2024]

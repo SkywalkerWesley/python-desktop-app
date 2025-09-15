@@ -1,0 +1,55 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [10/28/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Review non-normalized excel data
+Finalize derivative/log calculation method
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Adjust derivative graph calculations to match given excel sheet
+Add sample name column to output
+Test remote access
+
+Key Discussion Points:
+
+Discussion Point 1: It is okay to set negative values to 0 so that log can be applied because we are not concerned with those portions of the graph
+Discussion Point 2: The goal is to recreate the results seen on the spreadsheet as closely as possible. Therefore, we should use the calculations provided there.
+Discussion Point 3: GetMean() should be checked to make sure it is using value from derivative graph.
+Discussion Point 4: Team members should now be able to access the lab computer remotely.
+
+Decisions Made:
+
+Derivative calculations should match those given in the excel spreadsheet. This means applying log to the atom% and taking the derivative over several previous points.
+
+Action Items:
+
+Action Item 1: Test remote access to lab computer – 11/24/2024
+Action Item 2: Implement finalized calculations – 11/24/2024
+Action Item 3: Check GetMean() calculation – 11/24/2024
+
+4. Next Steps
+
+Deliver and test module 3 prototype
+
+5. Next Meeting
+
+Test module 3 prototype
+
+Date: [11/04/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [11/1/2024]

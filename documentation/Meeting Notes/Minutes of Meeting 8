@@ -1,0 +1,57 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [11/15/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Review module 3 bug fixes
+Discuss additional module 3 requirements
+Clarify understanding of module 4
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Center mean bars on derivative Graph
+Allow table to be copied to clipboard
+Allow user to select new acquisition after stopping previous acquisition.
+
+Key Discussion Points:
+
+Discussion Point 1: Module 3 functionality looks good, but the existing solution has bugs that should be fixed (recorded in Client's Requirements)
+Discussion Point 2: Additional mass spectrometer should start pulling data early next week.
+Discussion Point 3: Additional mass spectrometer needs to be collecting data for testing purposes since the program pulls data straight from the port.
+
+Decisions Made:
+
+New features listed in Client's requirements will be implemented in the following week.
+Additional mass spectrometer will begin pulling data again.
+
+Action Items:
+
+Action Item 1: Implement Center mean bars on derivative Graph – 11/22/2024
+Action Item 2: Implement Allow table to be copied to clipboard – 11/22/2024
+Action Item 3: Implement Allow user to select new acquisition after stopping previous acquisition. – 11/22/2024
+
+4. Next Steps
+
+Deliver and test updated module 3 executable.
+
+5. Next Meeting
+
+Test module 3 bug fixes
+Discuss next steps in module 4 development
+
+Date: [11/22/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [11/1/2024]

@@ -1,0 +1,5 @@
+__pycache__/
+SampleData/
+Acquisition-*/
+.DS_Store/
+build/

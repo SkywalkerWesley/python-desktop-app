@@ -1,0 +1,52 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [1/30/2025]
+Time: [1:00 PM – 2:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+
+1. Agenda
+
+Demonstrate real-time spooling workaround
+Ask about referenced headamp.evs file
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Module 4 accesses stream of data from EZ-Tap in real-time (minimal delay).
+
+Key Discussion Points:
+
+Discussion Point 1: Real-time Spooling workaround is suitable as long as delay is minimal.
+Discussion Point 2: Dr. Cousins deos not recall ever having headamp.evs file nor could we locate it.
+Discussion Point 3: Writing module 4 in C may also be a difficult yet possible solution.
+Discussion Point 4: Kyler hasn't been able to access the datastream even using C.
+Discussion Point 5: Dr. Cousins will be out of the country next week, so meeting will occur the following week.
+
+Decisions Made:
+
+We should move forward developing Module 4 using the EZview spooling workaround.
+
+Action Items:
+
+Action Item 1: Develop module 4 prototype – 1/12/2025
+
+4. Next Steps
+
+Develop and test module 4 prototype
+
+5. Next Meeting
+
+Discuss development progress
+
+Date: [2/12/2025]
+Time: [3:00 PM]
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [2/3/2025]

@@ -1,0 +1,69 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [09/23/2024]
+Time: [2:00 PM – 3:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Erik Holtrop
+Kyler Kupp
+
+1. Agenda
+
+Briefly discuss what needs to be done in modules 1, 2, and 3
+Discuss preferred workflow
+Acquire sample data
+Clarify additional questions
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Create executable for module 1 (2022)
+Test module 2 to ensure proper functionality
+Assess module 3 and continue building out the framework left by the previous Capstone group
+Update UI to be more user friendly
+Read data from new mass spectrometer
+
+Key Discussion Points:
+
+Discussion Point 1: Module 1 will come from the 2022 group while modules 2 and 3 will come from the 2023 group.
+Discussion Point 2: Creating an executable for module 1 would be greatly helpful.
+Discussion Point 3: Module 2 works mostly as expected, but should be tested to ensure proper functionality.
+Discussion Point 4: Module 3 contains only a starting framework and will need to be assessed to determine what changes need to be made.
+Discussion Point 5: A new module (module 4) may be useful for reading data from an additional mass spectrometer that ouputs data in a different format.
+Discussion Point 6: Additional module may be desired to integrate 3 non-mass-spectrometer instruments.
+Discussion Point 7: Additional module may be desired similar to module 1, but requires many changes.
+
+Decisions Made:
+
+Workflow: deliverables may be shared via shared filesystem.
+The executable for module 1 should be delivered by our next meeting.
+We will focus on developing module 3 and UI usability during our Capstone project.
+
+Action Items:
+
+Action Item 1: Create executable for module 1 (2022) – Due by 09/30/2024
+
+3. Project Milestones Discussed
+
+N/A
+
+4. Next Steps
+
+Create executable for module 1
+Use sample data to increase understanding of the current program
+
+5. Next Meeting
+
+Test our executable
+Test module 2
+Run module 3 on labview and assess its current state
+
+Date: [09/30/2024]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [09/23/2024]

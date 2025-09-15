@@ -1,0 +1,56 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [2/19/2025]
+Time: [3:00 PM – 4:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Erik Holtrop
+Kyler Kupp
+
+1. Agenda
+
+Demo Modules 1 & 2 Data Conversion Integration
+Test Modules 1 & 2 Data Accuracy
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Module 4's data conversion must be integrated into modules 1 and 2.
+Data must be converted at a high frequency for real-time tracking
+
+Key Discussion Points:
+
+Discussion Point 1: Data conversion appears functional as electrical signals were observed in Modules 1 & 2.
+Discussion Point 2: Currently, data is being converted at a frequency of roughly 10 seconds per data point.
+Discussion Point 3: Ideally, data should be converted at least every second.
+Discussion Point 4: Priority is increasing frequency of data conversion.
+
+Decisions Made:
+
+Data conversion in to modules 1 and 2 should be modified to report converted data more frequently.
+
+Action Items:
+
+Action Item 1: Increase frequency of data conversion in modules 1 & 2 – 2/26/2025
+Action Item 2: Create user manual / demo video for lab researchers 1 & 2 – 2/26/2025
+
+4. Next Steps
+
+Increase frequency of data conversion in modules 1 & 2
+Create user manual / demo video for lab researchers 1 & 2
+
+5. Next Meeting
+
+Test conversion frequency improvements
+Go over user-focused documentation
+
+Date: [2/26/2025]
+Time: [3:00 PM]
+Location: [Abelson 406BA]
+
+Meeting Notes Prepared By: Kyler Kupp
+Date: [2/20/2025]

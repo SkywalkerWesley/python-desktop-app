@@ -1,0 +1,61 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [1/16/2025]
+Time: [1:00 PM – 2:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Test Module 4 executable
+Troubleshoot EZView port
+Discuss starting Module 5
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Plot 3 streams of data against time.
+Sync each datastream together based on patterns in the data.
+Plot datastreams against each other as parameters.
+
+Key Discussion Points:
+
+Discussion Point 1: Module 4 executable was prevented from being sent. The file will be sent using a different method after the meeting so that it can be tested.
+Discussion Point 2: It seems administrator permissions are not the issue preventing the correct port from being accessed.
+Discussion Point 3: Module 4 is current priority, but module 5 will consist of the requirements listed above.
+Discussion Point 4: Dr. Cousins will send a program in R that is used to interpret the 3 datastreams for module 5. The program does contain some bugs though.
+
+Decisions Made:
+
+Module 4 executable will be sent after meeting for testing.
+Module 4 should be priority.
+Module 5 starting requirements.
+Dr. Cousins plans to further analyze the needs of Module 5.
+
+Action Items:
+
+Action Item 1: Send Module 4 executable – 1/15/2025
+Action Item 2: Test Module 4 executable – 1/22/2025
+Action Item 3: Begin prototyping module 5
+
+4. Next Steps
+
+Find a way around the current port roadblock.
+Begin plans for module 5.
+
+5. Next Meeting
+
+Continue troubleshooting module 4.
+Outline Module 5 with greater depth.
+
+Date: [1/22/2025]
+Time: [2:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [1/16/2025]

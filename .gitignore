@@ -1,0 +1,20 @@
+
+module1/application/build/main/
+
+module1/application/dist/
+
+module2/application/dist/
+
+module3/application/build/main/
+
+module3/application/dist/
+
+module4/application/build/main/
+
+module4/application/dist/
+
+# All custom files JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, Rider, CLion, PhpStorm, RubyMine, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws

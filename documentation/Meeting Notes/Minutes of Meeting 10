@@ -1,0 +1,54 @@
+Minutes of Meeting
+Project Name: [Python Desktop App]
+Client Name: [Asaph Cousins]
+Date: [1/22/2025]
+Time: [3:00 PM – 4:00 PM]
+Location: [Abelson 406BA]
+Attendees: 
+
+Asaph Cousins
+Kyler Kupp
+Erik Holtrop
+
+1. Agenda
+
+Test Module 4 executable
+Discuss possible solutions
+
+2. Meeting Summary
+
+Client’s Requirements:
+
+Module 4 accesses stream of data from EZ-Tap in real-time.
+
+Key Discussion Points:
+
+Discussion Point 1: Module 4 executable resulted in no access permission errors.
+Discussion Point 2: We should attempt contacting the Stratus Engineering for help with EZ-View and the EZ-Tap.
+Discussion Point 3: Alternative solution to COM port issue would be to decrypt data from EZ-View save files.
+Discussion Point 4: Access to the data in real-time is important to the client.
+
+Decisions Made:
+
+Module 4 should access data in real-time.
+Kyler and Erik will contact Stratus Engineering for assistance.
+
+Action Items:
+
+Action Item 1: Contact Stratus Engineering for assistance – 1/29/2025
+
+4. Next Steps
+
+Explore solutions to COM port roadblock
+Contact Stratus Engineering for more information
+
+5. Next Meeting
+
+Share information gained from meeting with Stratus.
+Test new attempted solutions.
+
+Date: [1/29/2025]
+Time: [3:00 PM]
+Location: [Abelson 406BA]
+Meeting Notes Prepared By: Kyler Kupp
+Date: [1/24/2025]
