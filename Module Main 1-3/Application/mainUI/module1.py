@@ -767,9 +767,28 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.calculatedPlotsFrame = Frame(self.scrollArea, 0.7)
         self.calculationButtonsFrame = Frame(self.scrollArea, 0.7)
         self.rawDataPlotFrame = Frame(self.scrollArea, 0.9)
-        
+
+        # Container frame that holds the tab widget
+        self.tabbedContainerFrame = Frame(self.scrollArea, 0.7)
+        self.tabbedContainerLayout = QtWidgets.QVBoxLayout()
+        self.tabbedContainerFrame.setLayout(self.tabbedContainerLayout)
+
+        # QTabWidget inside the container frame
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.tabbedContainerLayout.addWidget(self.tabWidget)
+
+        # First Tab ###############
+        # Note: layout is set later by self.calculatedPlotsUI()
+        self.tabWidget.addTab(self.calculatedPlotsFrame, "Calculated Plots")
+
+        # Second Tab ###############
+        # TODO Make Second tab
+        self.newTabWidget = QtWidgets.QWidget()
+        self.newTabLayout = QtWidgets.QVBoxLayout(self.newTabWidget)
+        self.tabWidget.addTab(self.newTabWidget, "Calculations")
+
         # Adding QFrames to the scroll area widget layout.
-        self.scrollAreaWidgetLayout.addWidget(self.calculatedPlotsFrame)
+        self.scrollAreaWidgetLayout.addWidget(self.tabbedContainerFrame)
         self.scrollAreaWidgetLayout.addWidget(self.rawDataPlotFrame)
         self.scrollAreaWidgetLayout.addWidget(self.calculationButtonsFrame)
 
