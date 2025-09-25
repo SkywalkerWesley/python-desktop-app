@@ -18,6 +18,9 @@ from PyQt5.QtGui import QMovie
 import pyqtgraph as pg
 import sys, os, csv
 import threading
+
+from numpy.ma.core import equal
+
 from worker import Worker
 from newFileNotifierThread import NewFileNotifierThread
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QSize
@@ -803,7 +806,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customPlotTable = QtWidgets.QTableWidget()
         self.customPlotTable.setColumnCount(2)
         self.customPlotTable.setHorizontalHeaderLabels(["X", "Y"])
-
+        self.customPlotTable.setRowCount(1)
 
         ################################## Get Data Buttons #####################################################
         self.customPlotGetDataButton = Button("Get Data", 120, 26)
@@ -984,6 +987,20 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Export Table connect method
         self.exportTableButton.clicked.connect(self.tableFileSave)
 
+        ################################## Connects The Table to the graph ##################################
+
+        self.customGraphScatter = pg.ScatterPlotItem(size=9, brush=pg.mkBrush(200, 200, 255), pen=pg.mkPen(None))
+        self.customPlotGraph.addItem(self.customGraphScatter)
+
+        # Prevent Recursive updating
+        self.updatingCustomTableOrPlot = False
+
+        # Updates plot when table is edited
+        self.customPlotTable.itemChanged.connect(self.onCustomPlotTableChanged)
+
+        # Attomaticle adds new row to table if needed
+        self.customPlotTable.cellChanged.connect(self.ensureCustomPlotTrailingEmptyRow)
+
     def select_ezview(self):
         # Open a file dialog to select a folder
         #self.folder_path = QFileDialog.getExistingDirectory(self, 'Select a folder')
@@ -1029,8 +1046,108 @@ class LabViewModule1(QtWidgets.QMainWindow):
 ################################################# End - User Interface Creation #################################################
 #################################################################################################################################
 
+#################################################################################################################################
+##################################################### Calculation Helper Methods ################################################
 
+    def onCustomPlotTableChanged(self, item):
+        """ Called when the cell table is edited.
+                :param {_ : }
+                :return -> None
+        """
+        if self.updatingCustomTableOrPlot:
+            return
+        self.updateCustomPlotFromTable(self.customPlotGraph, self.customPlotTable)
 
+    def updateCustomPlotFromTable(self, plot, table):
+        """ Reads table and adds x, y pair to plot TODO make graph only add new points not recreate itself
+                :param {plot : Graph}
+                :param {table : QtWidgets.QTableWidget()}
+                :return -> None
+        """
+        try:
+            self.updatingCustomTableOrPlot = True
+
+            xs = []
+            ys = []
+            rowCount = self.customPlotTable.rowCount()
+
+            # reads all points
+            for row in range(rowCount):
+                xi = table.item(row, 0)
+                yi = table.item(row, 1)
+
+                if xi is None or yi is None:
+                    continue
+
+                try:
+                    xv = float(xi.text().strip())
+                    yv = float(yi.text().strip())
+                except ValueError:
+                    continue
+                xs.append(xv)
+                ys.append(yv)
+
+            # Add points to plot
+            if xs and ys:
+                print(xs, ys)
+                plot.clear()
+                points = [{"pos": (x, y)} for x, y in zip(xs, ys)]
+                plot.plot(xs, ys,  pen='b', symbol='o', symbolBrush='r')
+                self.autoRangeToData(plot, xs, ys, 0.1)
+            else:
+                plot.clear()
+        finally:
+            self.updatingCustomTableOrPlot = False
+
+    def autoRangeToData(self, xs, ys, plot, padding):
+        """ rescales plot to show all points
+                :param {xs : List of x values}
+                :param {ys : List of y values}
+                :param {plot : Graph}
+                :return -> None
+        """
+
+        try:
+            xMin = min(xs)
+            xMax = max(xs)
+            yMin = min(ys)
+            yMax = max(ys)
+
+            # Adds margens if needed
+            if xMin == xMax:
+                xMin -= 1
+                yMax += 1
+            if yMin == yMax:
+                yMin -= 1
+                yMax += 1
+
+            xPadding = (xMin - xMax) * padding
+            yPadding = (yMin - yMax) * padding
+
+            # resizes plot
+            plot.setNewXRange(xMin - padding, xMax + xPadding)
+            plot.setNewYRange(yMin - padding, yMax + yPadding)
+        except:
+            pass
+
+    def ensureCustomPlotTrailingEmptyRow(self):
+        """ Ensures theres atleat one traling row """
+
+        last = self.customPlotTable.rowCount() - 1
+        lastHasData = False
+        for i in range(self.customPlotTable.columnCount()):
+            lastData = self.customPlotTable.item(last, i)
+            try:
+                if not lastData.text().strip() == "":
+                    lastHasData = True
+            except:
+                continue
+
+        if lastHasData:
+            self.customPlotTable.insertRow(last+1)
+
+################################################# End - Calculation Helper Methods ##############################################
+#################################################################################################################################
 
 #################################################################################################################################
 ##################################################### ButtonPressed Methods #####################################################
@@ -1047,13 +1164,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.meanBar.setRegion([midPoint-scale, midPoint+scale])
 
     def rescaleButtonPressed(self):
-        
+
         if self.realTimeGraph.graphInteraction == False:
             return
         elif self.realTimeGraph.graphInteraction == True:
             self.isYChnaged = True
             self.realTimeGraph.graphInteraction = False
-            
+
 
     def plotAllButtonPressed(self):
 
@@ -1073,7 +1190,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Step 5: Connect signals and slots and start the stop watch
         self.plotAllButtonThread.started.connect(self.plotAllThread.run)
-        
+
         self.plotAllButtonThread.start()
 
         self.plotAllThread.newDataPointSignal.connect(self.update_plot_data)
@@ -1094,12 +1211,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         """
             Starts the real time plot.
-            :param {_ : } 
+            :param {_ : }
             :return -> None
-            
+
         """
         if self.application_state == "Folder_Selected" or self.application_state == "Out_Of_Data":
-            
+
             self.startBit = True
             self.pauseBit = False
 
@@ -1138,14 +1255,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
             # change-file-reading
             # Write code to recieve the signal and start a new thread for dirwatch.
             self.worker.filesParsedSignal.connect(self.startNewFileNotifier)
-            
+
         else:
             self.throwFolderNotSelectedException()
 
 
     def throwOutOfDataException(self):
         self.application_state = "Out_Of_Data"
-        
+
         # Find minimum time between points
         times = list(self.sharedData.dataPoints.keys())
         times.sort()
@@ -1155,7 +1272,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 deltas.append((times[i+1]-times[i])) # Find the difference
         deltas.sort()
 
-        max_speed = 100/deltas[floor(len(deltas)/4)] # Divide minimum time delta by 1 for natural speed, then convert to speedSlider units by multiplying by 100. 
+        max_speed = 100/deltas[floor(len(deltas)/4)] # Divide minimum time delta by 1 for natural speed, then convert to speedSlider units by multiplying by 100.
 
         self.speedSlider.setValue(floor(max_speed))
 
@@ -1186,10 +1303,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             # Step 5: Connect signals and slots and start the stop watch
             self.fileNotiferThread.started.connect(self.newFileNotifierThread.run)
-            
+
             self.fileNotiferThread.start()
             self.fileCheckThreadStarted = True
-        
+
         else:
             pass
 
@@ -1224,7 +1341,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # x_value, y_value = self.getNextPoint(self.dataObj)
 
         # Updating the shared singleton plot data
-        
+
         # Updating all the curves
         # start = time()
         yAllMax = max(y)
@@ -1234,7 +1351,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.yAllMax = yAllMax
             self.yAllMin = yAllMin
             self.isYChnaged = True
-            
+
         else:
 
             if yAllMin < self.yAllMin:
@@ -1244,9 +1361,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
             if yAllMax > self.yAllMax:
                 self.yAllMax = yAllMax
                 self.isYChnaged = True
-        
+
         self.changeGraphRange(x)
-        
+
         self.curve1.updateDataPoints(x, y_value[0])
         self.curve2.updateDataPoints(x, y_value[1])
         self.curve3.updateDataPoints(x, y_value[2])
@@ -1258,12 +1375,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # print("Time taken plot all the points: ", time()-start)
 
     def changeGraphRange(self, x):
-        
+
         # Changing X Axes Scale
         self.currentXRange = self.realTimeGraph.getXAxisRange()
 
         if x > self.currentXRange[1]:
-            
+
             currentXScale = self.currentXRange[1] - self.currentXRange[0]
             # print("CurrentXScale = ", currentXScale)
             self.currentXRange = [self.currentXRange[0] + currentXScale, self.currentXRange[1] + currentXScale]
@@ -1282,7 +1399,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def on_wheel_event(self,event, axis=1):
         """
             For disabling the scroll on the axes.
-        
+
         """
         event.ignore()
 
@@ -1296,7 +1413,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             :param {_ : }
             :return -> None
         """
-        
+
         # Pause the Plot
         if self.pauseBit == False:
             self.application_state = "Paused"
@@ -1327,7 +1444,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             curve.hide()
 
     def OnEditedTemp(self):
-        
+
         # check for numerical input
         if (not self.isFloat(self.temperatureLineEdit.text()) and self.temperatureLineEdit.text() != ''):
             #throw execption
@@ -1361,11 +1478,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
             #throw execption
             self.throwFloatValueWarning()
             return
-            
+
         self.GraphMeanButtonPressed(lineEdit, curve, graph, concentration, True)
 
     def OnEditedO2Cal(self):
-        
+
         # check for numerical input
         if (not self.isFloat(self.o2CalibrationLineEdit.text()) and self.o2CalibrationLineEdit.text() != ''):
             #throw execption
@@ -1385,7 +1502,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             :param { curve : int} -> int that indicates the curve to take the mean from
             :return -> mean_value
         """
-        
+
         # Get the left and right x points from the mean bars
         xleft, xright = self.meanBar.getRegion()
 
@@ -1397,20 +1514,20 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # if one or both of the x values is not in the range of the dataset, return undefined
         elif (xright < list(self.sharedData.dataPoints.keys())[0] or xleft > list(self.sharedData.dataPoints.keys())[-1] or
                  xleft < list(self.sharedData.dataPoints.keys())[0] or xright > list(self.sharedData.dataPoints.keys())[-1]):
-            
+
             self.throwUndefined(lineEdit)
             return None
-        
+
         else:
             # get mean value between points
-            
+
             # Find the closest x values in the data to the x values from the mean bars
             xleft = min(self.sharedData.dataPoints.keys(), key=lambda x:abs(x-xleft))
             xright = min(self.sharedData.dataPoints.keys(), key=lambda x:abs(x-xright))
 
             # Get mean from graph
             mean_value = Calculations.getMean(self.sharedData.dataPoints, xleft, xright, curve)
-        
+
             # Set line edit with mean value
             lineEdit.setText(str(mean_value))
 
@@ -1510,7 +1627,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         Gets the mean of Mass 32 from the mean bars and uses that mean value to
         get the O2 concentration. Sets the appropirate line edits with
         these values.
-        :param {manualEntry: bool} -> Check bit for allowing manual entry of the 
+        :param {manualEntry: bool} -> Check bit for allowing manual entry of the
         :return -> True or False
 
         """
@@ -1586,7 +1703,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # if one or both of the x values is not in the range of the dataset, return undefined
         elif (xright < list(self.sharedData.dataPoints.keys())[0] or xleft > list(self.sharedData.dataPoints.keys())[-1] or
                  xleft < list(self.sharedData.dataPoints.keys())[0] or xright > list(self.sharedData.dataPoints.keys())[-1]):
-            
+
             self.throwUndefined(self.co2LineEdit1)
             self.throwUndefined(self.o2LineEdit1)
             self.co2Blank = 0
@@ -1601,7 +1718,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             # Calculate slope between these two points for graph Mass 44
             self.co2Blank = (self.sharedData.dataPoints[xright][3] - self.sharedData.dataPoints[xleft][3]) / (xright - xleft)
-            
+
             # Calculate slope between these two points for graph Mass 32
             self.o2Blank = (self.sharedData.dataPoints[xright][0] - self.sharedData.dataPoints[xleft][0]) / (xright - xleft)
 
@@ -1634,7 +1751,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # if one or both of the x values is not in the range of the dataset, return undefined
         elif (xright < list(self.sharedData.dataPoints.keys())[0] or xleft > list(self.sharedData.dataPoints.keys())[-1] or
                  xleft < list(self.sharedData.dataPoints.keys())[0] or xright > list(self.sharedData.dataPoints.keys())[-1]):
-            
+
             self.throwUndefined(self.co2LineEdit2)
             self.throwUndefined(self.o2LineEdit2)
             return
@@ -1645,7 +1762,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Calculate slope between these two points for graph Mass 44
         self.co2Extract = (self.sharedData.dataPoints[xright][3] - self.sharedData.dataPoints[xleft][3]) / (xright - xleft)
-        
+
         # Calculate slope between these two points for graph Mass 32
         self.o2Extract = (self.sharedData.dataPoints[xright][0] - self.sharedData.dataPoints[xleft][0]) / (xright - xleft)
 
@@ -1654,7 +1771,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.o2LineEdit2.setText(str(round(self.o2Extract, 4)))
 
         ################ Secone Line ###############
-        
+
         # if Blank has not been found yet, return undefined
         if (self.co2Blank == 0):
             self.throwUndefined(self.co2LineEdit3)
@@ -1684,7 +1801,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.throwUndefined(self.co2Concentrationv0LineEdit)
             self.throwUndefined(self.o2Concentrationv0LineEdit)
             return
-        
+
         self.vO = self.o2ConsumptionRate * self.o2Calibration * -1
         self.vC = self.co2ConsumptionRate * self.co2BufferCalibration * -1
         self.co2Concentration = (self.co2BufferCalibration * (co2Reading - self.co2Zero44Reading)) / self.biCarbCo2Ratio
@@ -1728,7 +1845,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.concentrationGraph.plot(list(self.co2VelocityConcentrationData.keys()), list(self.co2VelocityConcentrationData.values()), pen=None, symbol='o',
                                        symbolsize=1, symbolPen=pg.mkPen(color="#ff0000", width=0), symbolBrush=pg.mkBrush("#ff0000"))
-        
+
         self.concentrationGraph.plotItem.getViewBox().autoRange()
 
     def purgeTableButtonPressed(self):
@@ -1752,7 +1869,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # if a row is selected
         if rowIndex != -1:
-            
+
             row = ''
 
             # create string with row values, separated by spaces
@@ -1772,13 +1889,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
 ###################################################### On Edit Line Edits #######################################################
 
     def OnEditedTemp(self):
-        
+
         # check for numerical input
         if (not self.isFloat(self.temperatureLineEdit.text()) and self.temperatureLineEdit.text() != ''):
             #throw execption
             self.throwFloatValueWarning()
             return
-        
+
         if self.temperatureLineEdit.text() == '':
             self.temperature = 0
         else:
@@ -1809,11 +1926,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
             #throw execption
             self.throwFloatValueWarning()
             lineEdit.setText('undef')
-            
+
         self.GraphMeanButtonPressed(lineEdit, curve, graph, concentration, True)
 
     def OnEditedO2Cal(self):
-        
+
         # check for numerical input
         if (not self.isFloat(self.o2CalibrationLineEdit.text()) and self.o2CalibrationLineEdit.text() != ''):
             #throw execption
@@ -1844,7 +1961,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
 
     def speedSliderValueChanged(self):
-        
+
         #0.05   0.5   1   1.5     2.0
 
         speed = self.speedSlider.value()
@@ -1855,7 +1972,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.stopwatch.set_speed(speed/100)
 
     def endPlotAllThread(self):
-        
+
         self.movie.stop()
         self.processSpinnerLabel.hide()
         self.plotAllButtonThread.quit()
@@ -1876,10 +1993,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             # Step 5: Connect signals and slots and start the stop watch
             self.fileNotiferThread.started.connect(self.newFileNotifierThread.run)
-            
+
             self.fileNotiferThread.start()
             self.fileCheckThreadStarted = True
-        
+
         else:
             pass
 
@@ -1914,7 +2031,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # x_value, y_value = self.getNextPoint(self.dataObj)
 
         # Updating the shared singleton plot data
-        
+
         # Updating all the curves
         # start = time()
         yAllMax = max(y)
@@ -1924,7 +2041,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.yAllMax = yAllMax
             self.yAllMin = yAllMin
             self.isYChnaged = True
-            
+
         else:
 
             if yAllMin < self.yAllMin:
@@ -1934,9 +2051,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
             if yAllMax > self.yAllMax:
                 self.yAllMax = yAllMax
                 self.isYChnaged = True
-        
+
         self.changeGraphRange(x)
-        
+
         self.curve1.updateDataPoints(x, y_value[0])
         self.curve2.updateDataPoints(x, y_value[1])
         self.curve3.updateDataPoints(x, y_value[2])
@@ -1948,12 +2065,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # print("Time taken plot all the points: ", time()-start)
 
     def changeGraphRange(self, x):
-        
+
         # Changing X Axes Scale
         self.currentXRange = self.realTimeGraph.getXAxisRange()
 
         if x > self.currentXRange[1]:
-            
+
             currentXScale = self.currentXRange[1] - self.currentXRange[0]
             # print("CurrentXScale = ", currentXScale)
             self.currentXRange = [self.currentXRange[0] + currentXScale, self.currentXRange[1] + currentXScale]
@@ -1968,12 +2085,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 offsetMax = (20*self.yAllMax)/100
                 self.realTimeGraph.setNewYRange(self.yAllMin-offsetMin, self.yAllMax+offsetMax)
                 self.isYChnaged = False
-    
 
     def on_wheel_event(self,event, axis=1):
         """
             For disabling the scroll on the axes.
-        
+
         """
         event.ignore()
 
@@ -1984,7 +2100,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             :param {_ : }
             :return -> None
         """
-        
+
         if self.application_state == "Out_Of_Data" or self.application_state == "Folder_Selected" or self.application_state == "Idle":
             self.throwGraphInActiveException()
 
@@ -2052,7 +2168,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             # open file and write in calibrations
             with open(path, 'w') as csvfile:
                 writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
-                
+
                 writer.writerow(['Temp', 'O2 Calibration', 'O2 Buffer Zero', 'BiCarb/CO2',
                                  'CO2 Cal 0', 'CO2 Cal 6', 'CO2 Cal 12', 'CO2 Cal 18',
                                  'BiCarb Cal 0', 'BiCarb Cal 2', 'BiCarb Cal 4', 'BiCarb Cal 6'])
@@ -2060,7 +2176,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 row = (lineEdit.text() for lineEdit in  self.calibrationLineEdits)
 
                 writer.writerow(row)
-    
+
     def loadCals(self, file_path):
 
         """
@@ -2179,8 +2295,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         saveCalsDlg.buttonBox.rejected.connect(lambda: self.keepCalsRejected(saveCalsDlg))
         saveCalsDlg.exec()
 
-        if self.application_state == "Out_Of_Data" or self.application_state == "Folder_Selected" or self.application_state == "Idle": 
-            
+        if self.application_state == "Out_Of_Data" or self.application_state == "Folder_Selected" or self.application_state == "Idle":
+
             pass
 
         else:
@@ -2193,7 +2309,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
                 self.newFileNotifierThread.stop()
                 self.fileNotiferThread.quit()
-            
+
             except RuntimeError as exception:
                 print(exception)
 
@@ -2209,7 +2325,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def saveCals(self, obj):
         obj.close()
         self.saveCalibrations()
-        
+
     def keepCalsAccepted(self, obj):
         self.keepCals = True
         obj.close()
@@ -2263,7 +2379,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         purgeWarningDlg.exec()
 
     def purgeDiaAccepted(self, obj):
-        
+
         """
         Closes the purge warning dialoge. Purges the table and clears O2 and Co2 velocity concentration data.
         Also clears concentration graphs.
@@ -2285,7 +2401,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         #autoscale other graphs
         self.assayBufferGraph.plotItem.getViewBox().autoRange()
         self.hclGraph.plotItem.getViewBox().autoRange()
-    
+
     def purgeDiaRejected(self, obj):
         """
         Closes the purge warning dialoge.
@@ -2297,7 +2413,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
     def throwUndefined(self, lineEdit):
         lineEdit.setText('undef')
-    
+
 
 ################################################## End - Warning Dialog and ExceptionMethods #####################################
 ##################################################################################################################################
@@ -2316,7 +2432,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         Creates a Save File Dialog for user to decide what to name file and where to save it.
         Saves all the data currently in the table to a file (.csv by default)
         """
-        
+
         if (graph == 0):
 
             # if point already exists, delete point
@@ -2325,7 +2441,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
                     del self.assayBufferData[key]
 
             # if mean value is not undefined, create new point
-            if (mean != None):    
+            if (mean != None):
                 self.assayBufferData[concentration] = mean
 
             # clear graph before replot
@@ -2334,10 +2450,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
             # plot all points on the assay buffer graph
             assayLine = self.assayBufferGraph.plot(list(self.assayBufferData.values()), list(self.assayBufferData.keys()), pen=None, symbol='o',
                                        symbolsize=1, symbolPen=pg.mkPen(color="#00fa9a", width=0), symbolBrush=pg.mkBrush("#00fa9a"))
-            
+
             self.assayBufferGraph.plotItem.getViewBox().autoRange()
-            
-            
+
+
         else:
 
             # if point already exists, delete point
@@ -2346,15 +2462,15 @@ class LabViewModule1(QtWidgets.QMainWindow):
                     del self.hclData[key]
 
             # if mean value is not undefined, create new point
-            if (mean != None):    
+            if (mean != None):
                 self.hclData[concentration] = mean
 
             self.hclGraph.clear()
-            
+
             # plot point on the hcl graph
             hclLine = self.hclGraph.plot(list(self.hclData.values()), list(self.hclData.keys()), pen=None, symbol='o',
                                        symbolsize=1, symbolPen=pg.mkPen(color="#00fa9a", width=0), symbolBrush=pg.mkBrush("#00fa9a"))
-            
+
             self.hclGraph.plotItem.getViewBox().autoRange()
 
     def isFloat(self, string):
@@ -2440,14 +2556,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Data Object for getting the points.
         self.dataObj = GetData()
-        
+
         for lineEdit in self.lineEditList:
             if keepCals:
                 if lineEdit.isReadOnly():
                     lineEdit.setText("")
             else:
                 lineEdit.setText("")
-                    
+
 
         self.startButton.setEnabled(True)
 
@@ -2461,11 +2577,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.curve8.clear()
 
         # Uncheck all the graph boxes.
-        self.graph1CheckBox.setChecked(False) 
-        self.graph2CheckBox.setChecked(False) 
-        self.graph3CheckBox.setChecked(False) 
-        self.graph4CheckBox.setChecked(False) 
-        self.graph5CheckBox.setChecked(False) 
-        self.graph6CheckBox.setChecked(False) 
-        self.graph7CheckBox.setChecked(False) 
-        self.graph8CheckBox.setChecked(False) 
+        self.graph1CheckBox.setChecked(False)
+        self.graph2CheckBox.setChecked(False)
+        self.graph3CheckBox.setChecked(False)
+        self.graph4CheckBox.setChecked(False)
+        self.graph5CheckBox.setChecked(False)
+        self.graph6CheckBox.setChecked(False)
+        self.graph7CheckBox.setChecked(False)
+        self.graph8CheckBox.setChecked(False)
