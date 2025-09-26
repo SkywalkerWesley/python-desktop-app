@@ -1196,7 +1196,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         subsVarsX = {}
         subsVarsy = {}
 
-        # processes defalt vars for x
+        # processes defalt vars for x TODO Make better
         for var in self.xAxisEquiation.free_symbols:
 
             match str(var):
