@@ -18,7 +18,9 @@ from PyQt5.QtGui import QMovie
 import pyqtgraph as pg
 import sys, os, csv
 import threading
+from sympy import sympify
 
+from fontTools.feaLib import ast
 from numpy.ma.core import equal
 
 from worker import Worker
@@ -146,6 +148,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.keepCals = False
         self.folder_path = ''
+
+        # Custom Plot axises
+        self.xAxisEquiation = sympify("ln(b0)")
+        self.yAxisEquiation = sympify("ln(b1)")
 
         # Data Object for getting the points.
         self.dataObj = GetData()
@@ -787,6 +793,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.xAxisLineEdit = LineEdit()
         self.yAxisLineEdit = LineEdit()
 
+        self.xAxisLineEdit.setReadOnly(False)
+        self.yAxisLineEdit.setReadOnly(False)
+
+        self.xAxisLineEdit.setText(str(self.xAxisEquiation))
+        self.yAxisLineEdit.setText(str(self.yAxisEquiation))
+
         self.lineEditList.extend([self.xAxisLineEdit, self.yAxisLineEdit])
 
         self.topBarGridLayout = QtWidgets.QFormLayout()
@@ -999,7 +1011,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customPlotTable.itemChanged.connect(self.onCustomPlotTableChanged)
 
         # Attomaticle adds new row to table if needed
-        self.customPlotTable.cellChanged.connect(self.ensureCustomPlotTrailingEmptyRow)
+        self.customPlotTable.cellChanged.connect(lambda: self.ensureCustomTableEmptyRow(self.customPlotTable))
+
+        # Add data from button
+        self.customPlotGetDataButton.clicked.connect(lambda: self.addDataToTable(self.customPlotTable))
+
+        # Adds Equation from lineedit to plot
+        self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
+        self.yAxisLineEdit.returnPressed.connect(lambda: self.OnEditedYAxis())
 
     def select_ezview(self):
         # Open a file dialog to select a folder
@@ -1130,13 +1149,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
         except:
             pass
 
-    def ensureCustomPlotTrailingEmptyRow(self):
-        """ Ensures theres atleat one traling row """
+    def ensureCustomTableEmptyRow(self, table):
+        """ Ensures theres atleat one traling row
+            :param    {table: QtWidgets.QTableWidget()}"""
 
-        last = self.customPlotTable.rowCount() - 1
+        last = table.rowCount() - 1
         lastHasData = False
-        for i in range(self.customPlotTable.columnCount()):
-            lastData = self.customPlotTable.item(last, i)
+        for i in range(table.columnCount()):
+            lastData = table.item(last, i)
             try:
                 if not lastData.text().strip() == "":
                     lastHasData = True
@@ -1144,7 +1164,121 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 continue
 
         if lastHasData:
-            self.customPlotTable.insertRow(last+1)
+            table.insertRow(last+1)
+
+    def addDataToTable(self, table):
+        """ Adds data to table
+                :param {table : QtWidgets.QTableWidget()}
+        """
+        self.processDataThroughCustomEquations(self.getDataAtMeanBarLeft())
+
+    def processDataThroughCustomEquations(self, data):
+        """ Processes data through the custom equations
+            :param {data : Data}
+        """
+        vars = ["b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7"]
+
+        equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
+
+        # Test that all equation varable are valid
+        badVars = []
+        for var in equationVars:
+            if str(var) not in vars:
+                badVars.append(var)
+
+        if len(badVars) != 0:
+            # TODO tell bad vars
+            print("badVars")
+            return
+
+        Masses = data[1]
+
+        subsVarsX = {}
+        subsVarsy = {}
+
+        # processes defalt vars for x
+        for var in self.xAxisEquiation.free_symbols:
+
+            match str(var):
+                case "b0":
+                    subsVarsX["b0"] = Masses[0]
+                case "b1":
+                    subsVarsX["b1"] = Masses[1]
+                case "b2":
+                    subsVarsX["b2"] = Masses[2]
+                case "b3":
+                    subsVarsX["b3"] = Masses[3]
+                case "b4":
+                    subsVarsX["b4"] = Masses[4]
+                case "b5":
+                    subsVarsX["b5"] = Masses[5]
+                case "b6":
+                    subsVarsX["b6"] = Masses[6]
+                case "b7":
+                    subsVarsX["b7"] = Masses[7]
+                case _:
+                    print("badVars x", var)
+
+        # processes defalt vars
+        for var in self.yAxisEquiation.free_symbols:
+            match str(var):
+                case "b0":
+                    subsVarsy["b0"] = Masses[0]
+                case "b1":
+                    subsVarsy["b1"] = Masses[1]
+                case "b2":
+                    subsVarsy["b2"] = Masses[2]
+                case "b3":
+                    subsVarsy["b3"] = Masses[3]
+                case "b4":
+                    subsVarsy["b4"] = Masses[4]
+                case "b5":
+                    subsVarsy["b5"] = Masses[5]
+                case "b6":
+                    subsVarsy["b6"] = Masses[6]
+                case "b7":
+                    subsVarsy["b7"] = Masses[7]
+                case _:
+                    print("badVars y", var)
+
+        # subsitudes values in for vars
+        x = self.xAxisEquiation.subs(subsVarsX)
+        y = self.yAxisEquiation.subs(subsVarsy)
+
+        # adds data to plot
+        self.customPlotTable.insertRow(0)
+        self.customPlotTable.setItem(0, 0, QtWidgets.QTableWidgetItem(str(x)))
+        self.customPlotTable.setItem(0, 1, QtWidgets.QTableWidgetItem(str(y)))
+        self.ensureCustomTableEmptyRow(self.customPlotTable)
+
+    def getDataAtMeanBarLeft(self):
+        """
+        Return the raw plot data from the left mean bar
+        :return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])
+        """
+
+        leftBar, _ = self.meanBar.getRegion()
+
+        return self.getClosestDataAtTimePoint(leftBar)
+
+    def getClosestDataAtTimePoint(self, time):
+        """
+        Return the raw plot data from the time point
+        TODO make faster
+        :param time:
+        :return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])
+        """
+        xs = list(self.sharedData.dataPoints.keys())
+
+        # checks that data is in ranged
+        if time < xs[0] or time > xs[-1]:
+            return None
+
+        xCloset = min(self.sharedData.dataPoints.keys(), key=lambda x: abs(x - time))
+        y = self.sharedData.dataPoints[xCloset]
+
+        return (xCloset, y)
+
 
 ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
@@ -1951,6 +2085,24 @@ class LabViewModule1(QtWidgets.QMainWindow):
             return
 
         self.biCarbCo2ButtonPressed(True)
+
+    def OnEditedXAxis(self):
+        try:
+            equationString = self.xAxisLineEdit.text()
+            equation = sympify(equationString)
+            self.xAxisLineEdit.setText(str(equation))
+            self.xAxisEquiation = equation
+        except:
+            self.xAxisLineEdit.setText("invalide equation")
+
+    def OnEditedYAxis(self):
+        try:
+            equationString = self.yAxisLineEdit.text()
+            equation = sympify(equationString)
+            self.yAxisLineEdit.setText(str(equation))
+            self.yAxisEquiation = equation
+        except:
+            self.yAxisLineEdit.setText("invalide equation")
 
 #################################################### End - On Edit Line Edits ###################################################
 #################################################################################################################################
