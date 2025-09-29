@@ -1059,9 +1059,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.application_state = "Folder_Selected"
         self.select_folder_action.setEnabled(False)
 
-
-
-
 ################################################# End - User Interface Creation #################################################
 #################################################################################################################################
 
@@ -1176,74 +1173,54 @@ class LabViewModule1(QtWidgets.QMainWindow):
         """ Processes data through the custom equations
             :param {data : Data}
         """
-        vars = ["b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7"]
+
+        # Data is invalid users should have been warned already
+        if data is None:
+            return
+
+        Masses = data[1]
+
+        # list of custom variables
+        vars = {"b0": Masses[0], "b1": Masses[1], "b2": Masses[2], "b3": Masses[3], "b4": Masses[4], "b5": Masses[5], "b6": Masses[6], "b7": Masses[7],
+                "C02Zero": self.co2ZeroButton, }
 
         equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
 
         # Test that all equation varable are valid
         badVars = []
         for var in equationVars:
-            if str(var) not in vars:
+            if str(var) not in vars.keys():
                 badVars.append(var)
 
         if len(badVars) != 0:
-            # TODO tell bad vars
-            print("badVars")
+            self.throwTellUserDilog("Bad Variables Found", f"The following variables are not valid: {badVars}")
             return
 
-        Masses = data[1]
 
         subsVarsX = {}
-        subsVarsy = {}
+        subsVarsY = {}
 
         # processes defalt vars for x
         for var in self.xAxisEquiation.free_symbols:
+            name = str(var)
+            val = vars[name]
+            if not self.isFloat(str(val)):
+                self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
+                return
+            subsVarsX[name] = val
 
-            match str(var):
-                case "b0":
-                    subsVarsX["b0"] = Masses[0]
-                case "b1":
-                    subsVarsX["b1"] = Masses[1]
-                case "b2":
-                    subsVarsX["b2"] = Masses[2]
-                case "b3":
-                    subsVarsX["b3"] = Masses[3]
-                case "b4":
-                    subsVarsX["b4"] = Masses[4]
-                case "b5":
-                    subsVarsX["b5"] = Masses[5]
-                case "b6":
-                    subsVarsX["b6"] = Masses[6]
-                case "b7":
-                    subsVarsX["b7"] = Masses[7]
-                case _:
-                    print("badVars x", var)
-
-        # processes defalt vars
+        # processes defalt vars for y
         for var in self.yAxisEquiation.free_symbols:
-            match str(var):
-                case "b0":
-                    subsVarsy["b0"] = Masses[0]
-                case "b1":
-                    subsVarsy["b1"] = Masses[1]
-                case "b2":
-                    subsVarsy["b2"] = Masses[2]
-                case "b3":
-                    subsVarsy["b3"] = Masses[3]
-                case "b4":
-                    subsVarsy["b4"] = Masses[4]
-                case "b5":
-                    subsVarsy["b5"] = Masses[5]
-                case "b6":
-                    subsVarsy["b6"] = Masses[6]
-                case "b7":
-                    subsVarsy["b7"] = Masses[7]
-                case _:
-                    print("badVars y", var)
+            name = str(var)
+            val = vars[name]
+            if not self.isFloat(str(val)):
+                self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
+                return
+            subsVarsY[name] = val
 
         # subsitudes values in for vars
         x = self.xAxisEquiation.subs(subsVarsX)
-        y = self.yAxisEquiation.subs(subsVarsy)
+        y = self.yAxisEquiation.subs(subsVarsY)
 
         # adds data to plot
         self.customPlotTable.insertRow(0)
@@ -1271,7 +1248,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         xs = list(self.sharedData.dataPoints.keys())
 
         # checks that data is in ranged
-        if time < xs[0] or time > xs[-1]:
+        if len(xs) <= 0 or time < xs[0] or time > xs[-1]:
+            self.throwTellUserDilog("Time out of range", "Time out of range")
             return None
 
         xCloset = min(self.sharedData.dataPoints.keys(), key=lambda x: abs(x - time))
@@ -2093,7 +2071,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.xAxisLineEdit.setText(str(equation))
             self.xAxisEquiation = equation
         except:
-            self.xAxisLineEdit.setText("invalide equation")
+            self.throwTellUserDilog("Invalid Equation", f"{self.xAxisLineEdit.text()} is not a valid equation")
 
     def OnEditedYAxis(self):
         try:
@@ -2102,7 +2080,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.yAxisLineEdit.setText(str(equation))
             self.yAxisEquiation = equation
         except:
-            self.yAxisLineEdit.setText("invalide equation")
+            self.throwTellUserDilog("Invalid Equation", f"{self.yAxisLineEdit.text()} is not a valid equation")
 
 #################################################### End - On Edit Line Edits ###################################################
 #################################################################################################################################
@@ -2566,6 +2544,16 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def throwUndefined(self, lineEdit):
         lineEdit.setText('undef')
 
+    def throwTellUserDilog(self, title, str):
+        f"""
+            Opens a dilog box and displays a message.
+        :param title: dilog title
+        :param str: meesage
+        :return: 
+        """
+        msg = Dialog(title=title, buttonCount=1, message=str, parent=self)
+        msg.buttonBox.accepted.connect(msg.close)
+        msg.exec()
 
 ################################################## End - Warning Dialog and ExceptionMethods #####################################
 ##################################################################################################################################
