@@ -10,7 +10,7 @@ __status__ = "Completed"
 
 # from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QSizePolicy, QMainWindow, QMenuBar, QFileDialog, QAction
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QMainWindow, QMenuBar, QFileDialog, QAction, QFrame
 from PyQt5.QtWidgets import QSizePolicy, QDialogButtonBox
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtGui import QMovie
@@ -159,6 +159,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Initialize scroll area
         self.initializeScrollArea()
 
+
+        # Initialize the custum plot ui elements
+        self.customCalculationPlotsUI()
+
         # Initialzie the QFrames
         self.initializeQFrames()
 
@@ -171,8 +175,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Initializing calculation buttons
         self.calculationButtonsUI()
 
-        # Initialize the custum plot ui elements
-        self.customCalculationPlotsUI()
         
         # List of calibration line edits
         self.calibrationLineEdits = [self.temperatureLineEdit, self.o2CalibrationLineEdit, self.o2ZeroLineEdit, self.biCarbCo2LineEdit,
@@ -811,7 +813,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.customPlotGraphLayout = QtWidgets.QVBoxLayout()
         self.customPlotGraphLayout.addWidget(self.customPlotGraph)
-        self.customCalculationPlots.setContentsMargins(0, 10, 0, 0)
 
 
         ################################## Table #####################################################
@@ -836,7 +837,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customCalculationPlotsLayout.setColumnStretch(1,3)
         self.customCalculationPlotsLayout.addWidget(self.customPlotTable, 1, 2)
 
-        self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
+        # self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
 
     def initializeQFrames(self):
 
@@ -860,8 +861,17 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.tabWidget.addTab(self.calculatedPlotsFrame, "Calculated Plots")
 
         # Second Tab ###############
-        # TODO Make Second tab # Layout is set later by self.customCalculationPlotsUI()
-        self.tabWidget.addTab(self.customCalculationPlots, "Calculations")
+        contentWidget = QtWidgets.QWidget()
+        contentWidget.setLayout(self.customCalculationPlotsLayout)
+
+        innerScroll = QtWidgets.QScrollArea()
+        innerScroll.setWidgetResizable(True)
+        innerScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        innerScroll.setFrameShape(QFrame.NoFrame)
+        innerScroll.setWidget(contentWidget)
+
+        self.tabWidget.addTab(innerScroll, "Calculations")
+
 
         # Adding QFrames to the scroll area widget layout.
         self.scrollAreaWidgetLayout.addWidget(self.tabbedContainerFrame)
