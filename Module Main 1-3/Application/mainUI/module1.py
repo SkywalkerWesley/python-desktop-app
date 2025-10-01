@@ -25,7 +25,7 @@ from numpy.ma.core import equal
 
 from worker import Worker
 from newFileNotifierThread import NewFileNotifierThread
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QSize
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QSize, QPoint
 import numpy as np
 import time
 from stopwatch import Stopwatch
@@ -815,10 +815,25 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
 
         ################################## Table #####################################################
+        self.outterCustomTableWidget = QtWidgets.QGridLayout()
+        # table
         self.customPlotTable = QtWidgets.QTableWidget()
         self.customPlotTable.setColumnCount(2)
         self.customPlotTable.setHorizontalHeaderLabels(["X", "Y"])
         self.customPlotTable.setRowCount(1)
+        self.customPlotTable.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customPlotTable.customContextMenuRequested.connect(lambda pos: self.customPlotTableContexWindow(self.customPlotTable, pos))
+
+        self.outterCustomTableWidgetButtons = QtWidgets.QGridLayout()
+
+        self.customPlotExportTableButton = Button("Export Table", 120, 26)
+        self.customPlotClearTableButton = Button("Clear Table", 120, 26)
+
+        self.outterCustomTableWidgetButtons.addWidget(self.customPlotExportTableButton, 0, 0)
+        self.outterCustomTableWidgetButtons.addWidget(self.customPlotClearTableButton, 0, 1)
+
+        self.outterCustomTableWidget.addWidget(self.customPlotTable, 0, 0)
+        self.outterCustomTableWidget.addLayout(self.outterCustomTableWidgetButtons, 1, 0)
 
         ################################## Get Data Buttons #####################################################
         self.customPlotGetDataButton = Button("Get Data", 120, 26)
@@ -834,7 +849,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customCalculationPlotsLayout = QtWidgets.QGridLayout()
         self.customCalculationPlotsLayout.addLayout(self.customPlotButtonLayoutAxisGraph, 1, 1)
         self.customCalculationPlotsLayout.setColumnStretch(1,3)
-        self.customCalculationPlotsLayout.addWidget(self.customPlotTable, 1, 2)
+        self.customCalculationPlotsLayout.addLayout(self.outterCustomTableWidget, 1, 2)
 
         self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
 
@@ -997,7 +1012,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.purgeTableButton.clicked.connect(self.purgeTableButtonPressed)
 
         # Export Table connect method
-        self.exportTableButton.clicked.connect(self.tableFileSave)
+        self.exportTableButton.clicked.connect(lambda: self.tableFileSave(self.table))
 
         ################################## Connects The Table to the graph ##################################
 
@@ -1019,6 +1034,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Adds Equation from lineedit to plot
         self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
         self.yAxisLineEdit.returnPressed.connect(lambda: self.OnEditedYAxis())
+
+        # adds export table buttons
+        self.customPlotExportTableButton.clicked.connect(lambda: self.tableFileSave(self.customPlotTable))
+        self.customPlotClearTableButton.clicked.connect(lambda: self.customPlotTable.clearContents())
 
     def select_ezview(self):
         # Open a file dialog to select a folder
@@ -1149,9 +1168,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def ensureCustomTableEmptyRow(self, table):
         """ Ensures theres atleat one traling row
             :param    {table: QtWidgets.QTableWidget()}"""
-
         last = table.rowCount() - 1
         lastHasData = False
+
         for i in range(table.columnCount()):
             lastData = table.item(last, i)
             try:
@@ -1160,7 +1179,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             except:
                 continue
 
-        if lastHasData:
+        if lastHasData or last < 0:
             table.insertRow(last+1)
 
     def addDataToTable(self, table):
@@ -1257,6 +1276,27 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         return (xCloset, y)
 
+    def customPlotTableContexWindow(self, table, position: QPoint):
+        """ Opens a context menu for the table on right click
+            param {table : Table}
+            param {position : QPoint}
+        """
+        # gets table row
+        row = table.rowAt(position.y())
+
+        table.selectRow(row)
+
+        menu = QtWidgets.QMenu()
+        deleteAction = menu.addAction("Delete Row")
+
+        action = menu.exec_(table.viewport().mapToGlobal(position))
+
+        if action == deleteAction:
+            row = table.currentRow()
+            if row >= 0:
+                table.removeRow(row)
+                if row == table.rowCount():
+                    self.ensureCustomTableEmptyRow(table)
 
 ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
@@ -2342,7 +2382,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.OnEditedCO2Cal(self.calibrationLineEdits[10], 3, 1, 66.6)
             self.OnEditedCO2Cal(self.calibrationLineEdits[11], 3, 1, 99.9)
 
-    def tableFileSave(self):
+    def tableFileSave(self, table):
         """
         Creates a Save File Dialog for user to decide what to name file and where to save it.
         Saves all the data currently in the table to a file (.csv by default)
@@ -2358,15 +2398,16 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # if file type is not null
         if ok:
-            columns = range(self.table.columnCount()) # get column count
+            columns = range(table.columnCount()) # get column count
 
             # open file and write in table contents
             with open(path, 'w') as csvfile:
                 writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
 
                 # write each row into the file
-                for row in range(self.table.rowCount()):
-                    writer.writerow(self.table.item(row, column).text() for column in columns)
+                for row in range(table.rowCount()):
+                    writer.writerow(
+                        (table.item(row, column).text() if table.item(row, column) is not None else "") for column in columns)
 
     def exportRawData(self):
         """
