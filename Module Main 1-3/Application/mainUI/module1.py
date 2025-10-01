@@ -10,7 +10,7 @@ __status__ = "Completed"
 
 # from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QSizePolicy, QMainWindow, QMenuBar, QFileDialog, QAction
+from PyQt5.QtWidgets import QApplication, QSizePolicy, QMainWindow, QMenuBar, QFileDialog, QAction, QFrame
 from PyQt5.QtWidgets import QSizePolicy, QDialogButtonBox
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtGui import QMovie
@@ -876,7 +876,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Second Tab ###############
         # TODO Make Second tab # Layout is set later by self.customCalculationPlotsUI()
-        self.tabWidget.addTab(self.customCalculationPlots, "Calculations")
+        innerScroll = QtWidgets.QScrollArea()
+        innerScroll.setWidgetResizable(True)
+        innerScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        innerScroll.setFrameShape(QFrame.NoFrame)
+        innerScroll.setWidget(self.customCalculationPlots)
+
+        self.tabWidget.addTab(innerScroll, "Calculations")
 
         # Adding QFrames to the scroll area widget layout.
         self.scrollAreaWidgetLayout.addWidget(self.tabbedContainerFrame)
