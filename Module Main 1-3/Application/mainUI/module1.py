@@ -1035,7 +1035,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customPlotTable.cellChanged.connect(lambda: self.ensureCustomTableEmptyRow(self.customPlotTable))
 
         # Add data from button
-        self.customPlotGetDataButton.clicked.connect(lambda: self.addDataToTable(self.customPlotTable))
+        self.meanBar.sigRegionChangeFinished.connect(lambda: self.addDataToTable(self.customPlotTable))
 
         # Adds Equation from lineedit to plot
         self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
@@ -1130,7 +1130,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             # Add points to plot
             if xs and ys:
-                print(xs, ys)
                 plot.clear()
                 points = [{"pos": (x, y)} for x, y in zip(xs, ys)]
                 plot.plot(xs, ys,  pen='b', symbol='o', symbolBrush='r')
@@ -1192,7 +1191,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
         """ Adds data to table
                 :param {table : QtWidgets.QTableWidget()}
         """
-        self.processDataThroughCustomEquations(self.getDataAtMeanBarLeft())
+        x,y = self.processDataThroughCustomEquations(self.getDataAtMeanBarLeft())
+
+        # adds data to plot
+        table.insertRow(0)
+        table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(x)))
+        table.setItem(0, 1, QtWidgets.QTableWidgetItem(str(y)))
+        self.ensureCustomTableEmptyRow(table)
 
     def processDataThroughCustomEquations(self, data):
         """ Processes data through the custom equations
@@ -1246,12 +1251,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # subsitudes values in for vars
         x = self.xAxisEquiation.subs(subsVarsX)
         y = self.yAxisEquiation.subs(subsVarsY)
+        return x, y
 
-        # adds data to plot
-        self.customPlotTable.insertRow(0)
-        self.customPlotTable.setItem(0, 0, QtWidgets.QTableWidgetItem(str(x)))
-        self.customPlotTable.setItem(0, 1, QtWidgets.QTableWidgetItem(str(y)))
-        self.ensureCustomTableEmptyRow(self.customPlotTable)
 
     def getDataAtMeanBarLeft(self):
         """
@@ -1271,7 +1272,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])
         """
         xs = list(self.sharedData.dataPoints.keys())
-
+        self.getAllMeanBarData()
         # checks that data is in ranged
         if len(xs) <= 0 or time < xs[0] or time > xs[-1]:
             self.throwTellUserDilog("Time out of range", "Time out of range")
@@ -1289,7 +1290,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         """
         # gets table row
         row = table.rowAt(position.y())
-
+        getAllMeanBarData()
         table.selectRow(row)
 
         menu = QtWidgets.QMenu()
@@ -1303,6 +1304,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 table.removeRow(row)
                 if row == table.rowCount():
                     self.ensureCustomTableEmptyRow(table)
+
+    def getAllMeanBarData(self):
+        """Gets all data in mean bar range
+            return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])"""
+        left, right = self.meanBar.getRegion()
+        keys = [k for k in self.sharedData.dataPoints.keys() if k >= left and k <= right]
+        keyValues = [(k, self.sharedData.dataPoints[k]) for k in keys]
+        return keyValues
 
 ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
