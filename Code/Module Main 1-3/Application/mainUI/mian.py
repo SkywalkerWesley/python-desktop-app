@@ -1,5 +1,7 @@
 # Main function
 import os
+
+import PyQt5
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication
 
@@ -8,6 +10,9 @@ from module2 import LabViewModule2
 from module3 import LabViewModule3
 
 def main(args):
+    PyQt5.QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    PyQt5.QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
     app = QApplication([])
     screen = app.primaryScreen()
     size = screen.availableGeometry()

@@ -854,6 +854,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
 
     def initializeQFrames(self):
+        # create invisable resizable widget
+        resizableWidget = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
         # Creating a QFrame from User defined QFrame class.
         self.calculatedPlotsFrame = Frame(self.scrollArea, 0.7)
@@ -885,9 +887,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.tabWidget.addTab(innerScroll, "Calculations")
 
         # Adding QFrames to the scroll area widget layout.
-        self.scrollAreaWidgetLayout.addWidget(self.tabbedContainerFrame)
-        self.scrollAreaWidgetLayout.addWidget(self.rawDataPlotFrame)
-        self.scrollAreaWidgetLayout.addWidget(self.calculationButtonsFrame)
+        resizableWidget.addWidget(self.tabbedContainerFrame)
+        resizableWidget.addWidget(self.rawDataPlotFrame)
+        resizableWidget.addWidget(self.calculationButtonsFrame)
+
+        self.scrollAreaWidgetLayout.addWidget(resizableWidget)
 
     def addCurveAndMeanBar(self):
 
