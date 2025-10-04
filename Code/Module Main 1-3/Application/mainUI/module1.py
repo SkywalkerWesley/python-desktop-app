@@ -7,6 +7,7 @@ __maintainer__ = ""
 __email__ = ["agarwal.ritik1101@gmail.com", "zoeparker@comcast.net"]
 __status__ = "Completed"
 """
+from itertools import zip_longest
 
 # from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
@@ -152,6 +153,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Custom Plot axises
         self.xAxisEquiation = sympify("ln(Mass44)")
         self.yAxisEquiation = sympify("ln(Mass45)")
+
+        # List for holding custom plot data
+        self.samplePlotData = []
 
         # Data Object for getting the points.
         self.dataObj = GetData()
@@ -807,61 +811,60 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
 
         ################################## Graph #####################################################
-        self.customPlotGraph = Graph(100, 100)
+        self.calculationPlotGraph = Graph(100, 100)
 
         self.customPlotGraphLayout = QtWidgets.QVBoxLayout()
-        self.customPlotGraphLayout.addWidget(self.customPlotGraph)
+        self.customPlotGraphLayout.addWidget(self.calculationPlotGraph)
         self.customCalculationPlots.setContentsMargins(0, 10, 0, 0)
 
         ################################## Add Data Buttons #####################################################
-        self.customPlotAddDataButton = Button("Add Data", 120, 26)
-        self.customPlotButtonLayout = QtWidgets.QGridLayout()
-        self.customPlotButtonLayout.addWidget(self.customPlotAddDataButton, 1, 1)
+        self.calculationPlotAddDataButton = Button("Add Data", 120, 26)
+        self.calculationPlotButtonLayout = QtWidgets.QGridLayout()
+        self.calculationPlotButtonLayout.addWidget(self.calculationPlotAddDataButton, 1, 1)
 
         ################################## Table Sample Name #####################################################
         sampleNameLamble = QtWidgets.QLabel("Sample Name:")
         self.sampleNameLineEdit = LineEdit()
+        self.sampleNameLineEdit.setReadOnly(False)
 
         tableSampleNameLayout = QtWidgets.QFormLayout()
         tableSampleNameLayout.addRow(sampleNameLamble, self.sampleNameLineEdit)
 
         ################################## Table #####################################################
-        # table
-        self.customPlotTable = QtWidgets.QTableWidget()
-        self.customPlotTable.setColumnCount(1)
-        self.customPlotTable.setHorizontalHeaderLabels(["Samples"])
-        self.customPlotTable.setRowCount(1)
-        self.customPlotTable.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.customPlotTable.customContextMenuRequested.connect(lambda pos: self.customPlotTableContexWindow(self.customPlotTable, pos))
-
+        self.calculationPlotTable = QtWidgets.QTableWidget()
+        self.calculationPlotTable.setColumnCount(1)
+        self.calculationPlotTable.setHorizontalHeaderLabels(["Samples"])
+        self.calculationPlotTable.setRowCount(0)
+        # makes table read only
+        self.calculationPlotTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         ################################## Table Buttons #####################################################
-        outterCustomTableWidgetButtons = QtWidgets.QGridLayout()
+        outterCalculationTableWidgetButtons = QtWidgets.QGridLayout()
 
-        self.customPlotExportTableButton = Button("Export Table", 120, 26)
-        self.customPlotClearTableButton = Button("Clear Table", 120, 26)
+        self.calculationPlotExportTableButton = Button("Export Table", 120, 26)
+        self.calculationPlotClearTableButton = Button("Clear Table", 120, 26)
 
-        outterCustomTableWidgetButtons.addWidget(self.customPlotExportTableButton, 0, 0)
-        outterCustomTableWidgetButtons.addWidget(self.customPlotClearTableButton, 0, 1)
+        outterCalculationTableWidgetButtons.addWidget(self.calculationPlotExportTableButton, 0, 0)
+        outterCalculationTableWidgetButtons.addWidget(self.calculationPlotClearTableButton, 0, 1)
 
 
         ################################## Final Layout ##################################
 
         # Graph
-        self.customPlotButtonLayoutAxisGraph = QtWidgets.QGridLayout()
-        self.customPlotButtonLayoutAxisGraph.addLayout(self.topBarGridLayout, 1, 1)
-        self.customPlotButtonLayoutAxisGraph.addLayout(self.customPlotGraphLayout, 2, 1)
-        self.customPlotButtonLayoutAxisGraph.addLayout(self.customPlotButtonLayout, 3, 1)
+        self.calculationPlotButtonLayoutAxisGraph = QtWidgets.QGridLayout()
+        self.calculationPlotButtonLayoutAxisGraph.addLayout(self.topBarGridLayout, 1, 1)
+        self.calculationPlotButtonLayoutAxisGraph.addLayout(self.customPlotGraphLayout, 2, 1)
+        self.calculationPlotButtonLayoutAxisGraph.addLayout(self.calculationPlotButtonLayout, 3, 1)
 
         # Table
         tableHalfLayout = QtWidgets.QGridLayout()
         tableHalfLayout.addLayout(tableSampleNameLayout, 0, 0)
-        tableHalfLayout.addWidget(self.customPlotTable, 1, 0)
-        tableHalfLayout.addLayout(outterCustomTableWidgetButtons, 2, 0)
+        tableHalfLayout.addWidget(self.calculationPlotTable, 1, 0)
+        tableHalfLayout.addLayout(outterCalculationTableWidgetButtons, 2, 0)
 
         # final layout
         self.customCalculationPlotsLayout = QtWidgets.QGridLayout()
-        self.customCalculationPlotsLayout.addLayout(self.customPlotButtonLayoutAxisGraph, 1, 1)
+        self.customCalculationPlotsLayout.addLayout(self.calculationPlotButtonLayoutAxisGraph, 1, 1)
         self.customCalculationPlotsLayout.setColumnStretch(1,3)
         self.customCalculationPlotsLayout.addLayout(tableHalfLayout, 1, 2)
 
@@ -1040,16 +1043,23 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         ################################## Custom Plot Calc ##################################
 
-        # Add data from button
+        # Update Calculation Plots from mean bar moved
         self.meanBar.sigRegionChangeFinished.connect(self.updateCustomCalcPlots)
+
+        # Adds data to sample table
+        self.calculationPlotAddDataButton.clicked.connect(self.addSampleToSampleData)
 
         # Adds Equation from lineedit to plot
         self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
         self.yAxisLineEdit.returnPressed.connect(lambda: self.OnEditedYAxis())
 
         # adds export table buttons
-        self.customPlotExportTableButton.clicked.connect(lambda: self.tableFileSave(self.customPlotTable))
-        self.customPlotClearTableButton.clicked.connect(lambda: self.customPlotTable.clearContents())
+        self.calculationPlotExportTableButton.clicked.connect(lambda: self.exportSamleTable())
+        self.calculationPlotClearTableButton.clicked.connect(self.clearSampleData)
+
+        # Adds delt button to table
+        # self.calculationPlotTable.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        # self.calculationPlotTable.customContextMenuRequested.connect(lambda pos: self.customPlotTableContexWindow(self.calculationPlotTable, pos))
 
     def select_ezview(self):
         # Open a file dialog to select a folder
@@ -1095,15 +1105,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
 #################################################################################################################################
 ##################################################### Calculation Helper Methods ################################################
-
-    def onCustomPlotTableChanged(self, item):
-        """ Called when the cell table is edited.
-                :param {_ : }
-                :return -> None
-        """
-        # if self.updatingCustomTableOrPlot:
-        #     return
-        # self.updateCustomPlotFromTable(self.customPlotGraph, self.customPlotTable)
 
     def autoRangeToData(self, xs, ys, plot, padding):
         """ rescales plot to show all points
@@ -1159,13 +1160,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         data = self.getAllMeanBarData()
 
         # clears plots
-        self.customPlotGraph.clear()
+        self.calculationPlotGraph.clear()
 
         equationPlotDataX = []
         equationPlotDataY = []
 
         i = 0
-        print(data)
         # processes data
         for d in data:
             x, y = self.processDataThroughCustomEquations(d)
@@ -1173,8 +1173,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
             equationPlotDataY.append(y)
 
         # adds points to plot
-        self.customPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
-        self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.customPlotGraph, 0.1)
+        self.calculationPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
+        self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.calculationPlotGraph, 0.1)
 
     def processDataThroughCustomEquations(self, data):
         """ Processes data through the custom equations
@@ -1258,6 +1258,77 @@ class LabViewModule1(QtWidgets.QMainWindow):
         keys = [k for k in self.sharedData.dataPoints.keys() if k >= left and k <= right]
         keyValues = [(k, self.sharedData.dataPoints[k]) for k in keys]
         return keyValues
+
+    def exportSamleTable(self):
+        """
+        Exports data from samle table to csv file
+        :return:
+        """
+        # create directory if it doesn't already exist
+        path = 'C:\\Users\\' + self.user + '\\Documents\\TableData'
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        # Invoke Save File Dialog - returns the path of the file and file type
+        path, ok = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', path, "CSV Files (*.csv)")
+
+        # if file type is not null
+        if ok:
+
+            with open(path, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
+                print(self.samplePlotData)
+
+                for d in self.samplePlotData:
+                    columnHeaders = [d[0]]
+                    dataLists = [[]]
+                    for i in range(1, len(d)):
+                        columnHeaders.append(d[i][0])
+                        dataLists.append(d[i][1])
+                    writer.writerow(list(columnHeaders))
+                    for row in zip_longest(*dataLists, fillvalue=''):
+                        writer.writerow(list(row))
+
+    def addSampleToSampleData(self):
+        """
+        Adds sample data to sample table
+        :return:
+        """
+        sampleName = self.sampleNameLineEdit.text()
+
+        # checks that sample name is valid
+        if not sampleName:
+            sampleName = "null sample"
+
+        equationXName = self.xAxisLineEdit.text()
+        equationYName = self.yAxisLineEdit.text()
+
+        # equations plot
+        equationXData = None
+        equatoinYData = None
+
+        for item in self.calculationPlotGraph.listDataItems():
+            x, y = item.getData()
+            print("w", x, y)
+            equationXData = x
+            equatoinYData = y
+
+        # Adds Data to save
+        self.samplePlotData.append((sampleName, (equationXName, equationXData), (equationYName, equatoinYData)))
+
+        # Adds sample to table
+        self.calculationPlotTable.insertRow(0)
+        self.calculationPlotTable.setItem(0, 0, QtWidgets.QTableWidgetItem(sampleName))
+        print(sampleName, (equationXName, equationXData), (equationYName, equatoinYData))
+
+    def clearSampleData(self):
+        """
+        Clears sample data and sample data table
+        :return:
+        """
+        self.samplePlotData = []
+        self.calculationPlotTable.clear()
+        self.calculationPlotTable.setRowCount(0)
 
 ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
