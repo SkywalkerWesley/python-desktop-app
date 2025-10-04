@@ -150,8 +150,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.folder_path = ''
 
         # Custom Plot axises
-        self.xAxisEquiation = sympify("b4")
-        self.yAxisEquiation = sympify("b5")
+        self.xAxisEquiation = sympify("ln(Mass44)")
+        self.yAxisEquiation = sympify("ln(Mass45)")
 
         # Data Object for getting the points.
         self.dataObj = GetData()
@@ -1155,14 +1155,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             # Adds margens if needed
             if xMin == xMax:
-                xMin -= 1
-                yMax += 1
+                xMin -= padding
+                yMax += padding
             if yMin == yMax:
-                yMin -= 1
-                yMax += 1
+                yMin -= padding
+                yMax += padding
 
-            xPadding = (xMin - xMax) * padding
-            yPadding = (yMin - yMax) * padding
+            xPadding = (xMax - xMin) * padding
+            yPadding = (yMax - yMin) * padding
 
             # resizes plot
             plot.setNewXRange(xMin - padding, xMax + xPadding)
@@ -1188,7 +1188,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             table.insertRow(last+1)
 
     def updateCustomCalcPlots(self):
-        """ Updates the custom calculation plots when the mean bar is moved
+        """ Updates the custom calculation plots with data from the mean bar
         """
         data = self.getAllMeanBarData()
 
@@ -1223,8 +1223,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         Masses = data[1]
 
         # list of custom variables
-        vars = {"b0": Masses[0], "b1": Masses[1], "b2": Masses[2], "b3": Masses[3], "b4": Masses[4], "b5": Masses[5], "b6": Masses[6], "b7": Masses[7],
-                "C02Zero": self.co2ZeroButton, "Time": data[0]}
+        vars = {"Mass32": Masses[0], "Mass34": Masses[1], "Mass36": Masses[2], "Mass44": Masses[3], "Mass45": Masses[4], "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7],
+                "Time": data[0]}
 
         equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
 
