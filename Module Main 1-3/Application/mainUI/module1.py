@@ -150,8 +150,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.folder_path = ''
 
         # Custom Plot axises
-        self.xAxisEquiation = sympify("ln(b0)")
-        self.yAxisEquiation = sympify("ln(b1)")
+        self.xAxisEquiation = sympify("b4")
+        self.yAxisEquiation = sympify("b5")
 
         # Data Object for getting the points.
         self.dataObj = GetData()
@@ -1022,20 +1022,20 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         ################################## Connects The Table to the graph ##################################
 
-        self.customGraphScatter = pg.ScatterPlotItem(size=9, brush=pg.mkBrush(200, 200, 255), pen=pg.mkPen(None))
-        self.customPlotGraph.addItem(self.customGraphScatter)
+        # self.customGraphScatter = pg.ScatterPlotItem(size=9, brush=pg.mkBrush(200, 200, 255), pen=pg.mkPen(None))
+        # self.customPlotGraph.addItem(self.customGraphScatter)
 
         # Prevent Recursive updating
-        self.updatingCustomTableOrPlot = False
+        # self.updatingCustomTableOrPlot = False
 
         # Updates plot when table is edited
-        self.customPlotTable.itemChanged.connect(self.onCustomPlotTableChanged)
+        # self.customPlotTable.itemChanged.connect(self.onCustomPlotTableChanged)
 
         # Attomaticle adds new row to table if needed
-        self.customPlotTable.cellChanged.connect(lambda: self.ensureCustomTableEmptyRow(self.customPlotTable))
+        # self.customPlotTable.cellChanged.connect(lambda: self.ensureCustomTableEmptyRow(self.customPlotTable))
 
         # Add data from button
-        self.meanBar.sigRegionChangeFinished.connect(lambda: self.addDataToTable(self.customPlotTable))
+        self.meanBar.sigRegionChangeFinished.connect(self.updateCustomCalcPlots)
 
         # Adds Equation from lineedit to plot
         self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
@@ -1095,9 +1095,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 :param {_ : }
                 :return -> None
         """
-        if self.updatingCustomTableOrPlot:
-            return
-        self.updateCustomPlotFromTable(self.customPlotGraph, self.customPlotTable)
+        # if self.updatingCustomTableOrPlot:
+        #     return
+        # self.updateCustomPlotFromTable(self.customPlotGraph, self.customPlotTable)
 
     def updateCustomPlotFromTable(self, plot, table):
         """ Reads table and adds x, y pair to plot TODO make graph only add new points not recreate itself
@@ -1187,17 +1187,29 @@ class LabViewModule1(QtWidgets.QMainWindow):
         if lastHasData or last < 0:
             table.insertRow(last+1)
 
-    def addDataToTable(self, table):
-        """ Adds data to table
-                :param {table : QtWidgets.QTableWidget()}
+    def updateCustomCalcPlots(self):
+        """ Updates the custom calculation plots when the mean bar is moved
         """
-        x,y = self.processDataThroughCustomEquations(self.getDataAtMeanBarLeft())
+        data = self.getAllMeanBarData()
 
-        # adds data to plot
-        table.insertRow(0)
-        table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(x)))
-        table.setItem(0, 1, QtWidgets.QTableWidgetItem(str(y)))
-        self.ensureCustomTableEmptyRow(table)
+        # clears plots
+        self.customPlotGraph.clear()
+
+        equationPlotDataX = []
+        equationPlotDataY = []
+
+        i = 0
+        print(data)
+        # processes data
+        for d in data:
+            x, y = self.processDataThroughCustomEquations(d)
+            equationPlotDataX.append(x)
+            equationPlotDataY.append(y)
+
+        # adds points to plot
+        self.customPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
+        self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.customPlotGraph, 0.1)
+
 
     def processDataThroughCustomEquations(self, data):
         """ Processes data through the custom equations
@@ -1212,7 +1224,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # list of custom variables
         vars = {"b0": Masses[0], "b1": Masses[1], "b2": Masses[2], "b3": Masses[3], "b4": Masses[4], "b5": Masses[5], "b6": Masses[6], "b7": Masses[7],
-                "C02Zero": self.co2ZeroButton, }
+                "C02Zero": self.co2ZeroButton, "Time": data[0]}
 
         equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
 
@@ -1251,8 +1263,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # subsitudes values in for vars
         x = self.xAxisEquiation.subs(subsVarsX)
         y = self.yAxisEquiation.subs(subsVarsY)
-        return x, y
-
+        return float(x), float(y)
 
     def getDataAtMeanBarLeft(self):
         """
@@ -1290,7 +1301,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         """
         # gets table row
         row = table.rowAt(position.y())
-        getAllMeanBarData()
         table.selectRow(row)
 
         menu = QtWidgets.QMenu()
