@@ -773,8 +773,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         #  ______________________________________________________________
         #  | Top Bar                                      |             |
-        #  |                                              |             |
-        #  |----------------------------------------------|             |
+        #  |                                              |Sample Name  |
+        #  |----------------------------------------------|-------------|
         #  |  graph                                       | Table       |
         #  |                                              |             |
         #  |                                              |             |
@@ -813,43 +813,57 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customPlotGraphLayout.addWidget(self.customPlotGraph)
         self.customCalculationPlots.setContentsMargins(0, 10, 0, 0)
 
-
-        ################################## Table #####################################################
-        self.outterCustomTableWidget = QtWidgets.QGridLayout()
-        # table
-        self.customPlotTable = QtWidgets.QTableWidget()
-        self.customPlotTable.setColumnCount(2)
-        self.customPlotTable.setHorizontalHeaderLabels(["X", "Y"])
-        self.customPlotTable.setRowCount(1)
-        self.customPlotTable.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customPlotTable.customContextMenuRequested.connect(lambda pos: self.customPlotTableContexWindow(self.customPlotTable, pos))
-
-        self.outterCustomTableWidgetButtons = QtWidgets.QGridLayout()
-
-        self.customPlotExportTableButton = Button("Export Table", 120, 26)
-        self.customPlotClearTableButton = Button("Clear Table", 120, 26)
-
-        self.outterCustomTableWidgetButtons.addWidget(self.customPlotExportTableButton, 0, 0)
-        self.outterCustomTableWidgetButtons.addWidget(self.customPlotClearTableButton, 0, 1)
-
-        self.outterCustomTableWidget.addWidget(self.customPlotTable, 0, 0)
-        self.outterCustomTableWidget.addLayout(self.outterCustomTableWidgetButtons, 1, 0)
-
         ################################## Add Data Buttons #####################################################
         self.customPlotAddDataButton = Button("Add Data", 120, 26)
         self.customPlotButtonLayout = QtWidgets.QGridLayout()
         self.customPlotButtonLayout.addWidget(self.customPlotAddDataButton, 1, 1)
 
+        ################################## Table Sample Name #####################################################
+        sampleNameLamble = QtWidgets.QLabel("Sample Name:")
+        self.sampleNameLineEdit = LineEdit()
+
+        tableSampleNameLayout = QtWidgets.QFormLayout()
+        tableSampleNameLayout.addRow(sampleNameLamble, self.sampleNameLineEdit)
+
+        ################################## Table #####################################################
+        # table
+        self.customPlotTable = QtWidgets.QTableWidget()
+        self.customPlotTable.setColumnCount(1)
+        self.customPlotTable.setHorizontalHeaderLabels(["Samples"])
+        self.customPlotTable.setRowCount(1)
+        self.customPlotTable.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customPlotTable.customContextMenuRequested.connect(lambda pos: self.customPlotTableContexWindow(self.customPlotTable, pos))
+
+
+        ################################## Table Buttons #####################################################
+        outterCustomTableWidgetButtons = QtWidgets.QGridLayout()
+
+        self.customPlotExportTableButton = Button("Export Table", 120, 26)
+        self.customPlotClearTableButton = Button("Clear Table", 120, 26)
+
+        outterCustomTableWidgetButtons.addWidget(self.customPlotExportTableButton, 0, 0)
+        outterCustomTableWidgetButtons.addWidget(self.customPlotClearTableButton, 0, 1)
+
+
         ################################## Final Layout ##################################
+
+        # Graph
         self.customPlotButtonLayoutAxisGraph = QtWidgets.QGridLayout()
         self.customPlotButtonLayoutAxisGraph.addLayout(self.topBarGridLayout, 1, 1)
         self.customPlotButtonLayoutAxisGraph.addLayout(self.customPlotGraphLayout, 2, 1)
         self.customPlotButtonLayoutAxisGraph.addLayout(self.customPlotButtonLayout, 3, 1)
 
+        # Table
+        tableHalfLayout = QtWidgets.QGridLayout()
+        tableHalfLayout.addLayout(tableSampleNameLayout, 0, 0)
+        tableHalfLayout.addWidget(self.customPlotTable, 1, 0)
+        tableHalfLayout.addLayout(outterCustomTableWidgetButtons, 2, 0)
+
+        # final layout
         self.customCalculationPlotsLayout = QtWidgets.QGridLayout()
         self.customCalculationPlotsLayout.addLayout(self.customPlotButtonLayoutAxisGraph, 1, 1)
         self.customCalculationPlotsLayout.setColumnStretch(1,3)
-        self.customCalculationPlotsLayout.addLayout(self.outterCustomTableWidget, 1, 2)
+        self.customCalculationPlotsLayout.addLayout(tableHalfLayout, 1, 2)
 
         self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
 
@@ -877,7 +891,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.tabWidget.addTab(self.calculatedPlotsFrame, "Calculated Plots")
 
         # Second Tab ###############
-        # TODO Make Second tab # Layout is set later by self.customCalculationPlotsUI()
+        # Layout is set later by self.customCalculationPlotsUI()
         innerScroll = QtWidgets.QScrollArea()
         innerScroll.setWidgetResizable(True)
         innerScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
