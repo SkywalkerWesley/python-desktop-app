@@ -781,8 +781,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         #  |                                              |             |
         #  |                                              |             |
         #  |                                              |             |
-        #  |----------------------------------------------|             |
-        #  | Get Data Buttons                             |             |
+        #  |----------------------------------------------|-------------|
+        #  | Get Data Buttons                             | T Buttons   |
         #  |______________________________________________|_____________|
 
         ################################### Top Bar layout #############################################
@@ -835,10 +835,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.outterCustomTableWidget.addWidget(self.customPlotTable, 0, 0)
         self.outterCustomTableWidget.addLayout(self.outterCustomTableWidgetButtons, 1, 0)
 
-        ################################## Get Data Buttons #####################################################
-        self.customPlotGetDataButton = Button("Get Data", 120, 26)
+        ################################## Add Data Buttons #####################################################
+        self.customPlotAddDataButton = Button("Add Data", 120, 26)
         self.customPlotButtonLayout = QtWidgets.QGridLayout()
-        self.customPlotButtonLayout.addWidget(self.customPlotGetDataButton, 1, 1)
+        self.customPlotButtonLayout.addWidget(self.customPlotAddDataButton, 1, 1)
 
         ################################## Final Layout ##################################
         self.customPlotButtonLayoutAxisGraph = QtWidgets.QGridLayout()
@@ -1020,19 +1020,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Export Table connect method
         self.exportTableButton.clicked.connect(lambda: self.tableFileSave(self.table))
 
-        ################################## Connects The Table to the graph ##################################
-
-        # self.customGraphScatter = pg.ScatterPlotItem(size=9, brush=pg.mkBrush(200, 200, 255), pen=pg.mkPen(None))
-        # self.customPlotGraph.addItem(self.customGraphScatter)
-
-        # Prevent Recursive updating
-        # self.updatingCustomTableOrPlot = False
-
-        # Updates plot when table is edited
-        # self.customPlotTable.itemChanged.connect(self.onCustomPlotTableChanged)
-
-        # Attomaticle adds new row to table if needed
-        # self.customPlotTable.cellChanged.connect(lambda: self.ensureCustomTableEmptyRow(self.customPlotTable))
+        ################################## Custom Plot Calc ##################################
 
         # Add data from button
         self.meanBar.sigRegionChangeFinished.connect(self.updateCustomCalcPlots)
@@ -1098,46 +1086,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # if self.updatingCustomTableOrPlot:
         #     return
         # self.updateCustomPlotFromTable(self.customPlotGraph, self.customPlotTable)
-
-    def updateCustomPlotFromTable(self, plot, table):
-        """ Reads table and adds x, y pair to plot TODO make graph only add new points not recreate itself
-                :param {plot : Graph}
-                :param {table : QtWidgets.QTableWidget()}
-                :return -> None
-        """
-        try:
-            self.updatingCustomTableOrPlot = True
-
-            xs = []
-            ys = []
-            rowCount = self.customPlotTable.rowCount()
-
-            # reads all points
-            for row in range(rowCount):
-                xi = table.item(row, 0)
-                yi = table.item(row, 1)
-
-                if xi is None or yi is None:
-                    continue
-
-                try:
-                    xv = float(xi.text().strip())
-                    yv = float(yi.text().strip())
-                except ValueError:
-                    continue
-                xs.append(xv)
-                ys.append(yv)
-
-            # Add points to plot
-            if xs and ys:
-                plot.clear()
-                points = [{"pos": (x, y)} for x, y in zip(xs, ys)]
-                plot.plot(xs, ys,  pen='b', symbol='o', symbolBrush='r')
-                self.autoRangeToData(plot, xs, ys, 0.1)
-            else:
-                plot.clear()
-        finally:
-            self.updatingCustomTableOrPlot = False
 
     def autoRangeToData(self, xs, ys, plot, padding):
         """ rescales plot to show all points
@@ -1210,7 +1158,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
         self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.customPlotGraph, 0.1)
 
-
     def processDataThroughCustomEquations(self, data):
         """ Processes data through the custom equations
             :param {data : Data}
@@ -1264,35 +1211,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         x = self.xAxisEquiation.subs(subsVarsX)
         y = self.yAxisEquiation.subs(subsVarsY)
         return float(x), float(y)
-
-    def getDataAtMeanBarLeft(self):
-        """
-        Return the raw plot data from the left mean bar
-        :return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])
-        """
-
-        leftBar, _ = self.meanBar.getRegion()
-
-        return self.getClosestDataAtTimePoint(leftBar)
-
-    def getClosestDataAtTimePoint(self, time):
-        """
-        Return the raw plot data from the time point
-        TODO make faster
-        :param time:
-        :return: (x_timestamp, [y0, y1, y2, y3, y4, y5, y6, y7])
-        """
-        xs = list(self.sharedData.dataPoints.keys())
-        self.getAllMeanBarData()
-        # checks that data is in ranged
-        if len(xs) <= 0 or time < xs[0] or time > xs[-1]:
-            self.throwTellUserDilog("Time out of range", "Time out of range")
-            return None
-
-        xCloset = min(self.sharedData.dataPoints.keys(), key=lambda x: abs(x - time))
-        y = self.sharedData.dataPoints[xCloset]
-
-        return (xCloset, y)
 
     def customPlotTableContexWindow(self, table, position: QPoint):
         """ Opens a context menu for the table on right click
