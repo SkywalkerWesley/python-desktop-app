@@ -1185,12 +1185,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         if data is None:
             return
 
-        Masses = data[1]
-
-        # list of custom variables
-        vars = {"Mass32": Masses[0], "Mass34": Masses[1], "Mass36": Masses[2], "Mass44": Masses[3], "Mass45": Masses[4], "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7],
-                "Time": data[0]}
-
+        vars = self.getVarsDict(data)
         equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
 
         # Test that all equation varable are valid
@@ -1230,6 +1225,20 @@ class LabViewModule1(QtWidgets.QMainWindow):
         y = self.yAxisEquiation.subs(subsVarsY)
         return float(x), float(y)
 
+    def getVarsDict(self, data):
+        """
+        return filled out var dictionary for given data
+        :param data: (time, [y0,..y7])
+        :return:
+        """
+        Masses = data[1]
+
+        # list of custom variables
+        vars = {"Mass32": Masses[0], "Mass34": Masses[1], "Mass36": Masses[2], "Mass44": Masses[3], "Mass45": Masses[4],
+                "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7],
+                "Time": data[0]}
+
+        return vars
     def customPlotTableContexWindow(self, table, position: QPoint):
         """ Opens a context menu for the table on right click
             param {table : Table}
@@ -1277,7 +1286,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             with open(path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
-                print(self.samplePlotData)
 
                 for d in self.samplePlotData:
                     columnHeaders = [d[0]]
@@ -1294,32 +1302,51 @@ class LabViewModule1(QtWidgets.QMainWindow):
         Adds sample data to sample table
         :return:
         """
-        sampleName = self.sampleNameLineEdit.text()
+        #################### Sample Name ####################
 
+        sampleName = self.sampleNameLineEdit.text()
         # checks that sample name is valid
         if not sampleName:
             sampleName = "null sample"
+        sampleData = list()
+        sampleData.append(sampleName)
+
+        #################### equations plot ####################
 
         equationXName = self.xAxisLineEdit.text()
         equationYName = self.yAxisLineEdit.text()
 
-        # equations plot
         equationXData = None
         equatoinYData = None
 
         for item in self.calculationPlotGraph.listDataItems():
             x, y = item.getData()
-            print("w", x, y)
             equationXData = x
             equatoinYData = y
 
-        # Adds Data to save
-        self.samplePlotData.append((sampleName, (equationXName, equationXData), (equationYName, equatoinYData)))
+        sampleData.append((equationXName, equationXData))
+        sampleData.append((equationYName, equatoinYData))
+
+        #################### Raw Data ####################
+        data = self.getAllMeanBarData()
+
+        allVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
+
+        rawData = {k: [] for k in allVars}
+        for d in data:
+            vars = self.getVarsDict(d)
+            for v in allVars:
+                rawData[v].append(vars[str(v)])
+
+        for k in rawData.keys():
+            sampleData.append((k, rawData[k]))
+
+        #################### Adds Data to save ####################
+        self.samplePlotData.append(sampleData)
 
         # Adds sample to table
         self.calculationPlotTable.insertRow(0)
         self.calculationPlotTable.setItem(0, 0, QtWidgets.QTableWidgetItem(sampleName))
-        print(sampleName, (equationXName, equationXData), (equationYName, equatoinYData))
 
     def clearSampleData(self):
         """
