@@ -1052,6 +1052,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Adds Equation from lineedit to plot
         self.xAxisLineEdit.returnPressed.connect(lambda: self.OnEditedXAxis())
         self.yAxisLineEdit.returnPressed.connect(lambda: self.OnEditedYAxis())
+        
+        # updates the plot when equations our changed
+        self.xAxisLineEdit.returnPressed.connect(lambda: self.updateCustomCalcPlots())
+        self.yAxisLineEdit.returnPressed.connect(lambda: self.updateCustomCalcPlots())
 
         # adds export table buttons
         self.calculationPlotExportTableButton.clicked.connect(lambda: self.exportSamleTable())
@@ -1237,8 +1241,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         vars = {"Mass32": Masses[0], "Mass34": Masses[1], "Mass36": Masses[2], "Mass44": Masses[3], "Mass45": Masses[4],
                 "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7],
                 "Time": data[0]}
-
         return vars
+
     def customPlotTableContexWindow(self, table, position: QPoint):
         """ Opens a context menu for the table on right click
             param {table : Table}
