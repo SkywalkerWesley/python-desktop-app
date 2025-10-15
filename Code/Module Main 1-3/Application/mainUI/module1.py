@@ -887,6 +887,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Container frame that holds the tab widget
         self.tabbedContainerFrame = Frame(self.scrollArea, 0.7)
+
         self.tabbedContainerLayout = QtWidgets.QVBoxLayout()
         self.tabbedContainerFrame.setLayout(self.tabbedContainerLayout)
 
@@ -1356,6 +1357,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def addSampleToSampleData(self):
         """
         Adds sample data to sample table
+        sample Data: (sampleName, (header, list of data), (header, list of data)...)
         :return:
         """
         #################### Sample Name ####################

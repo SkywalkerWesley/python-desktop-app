@@ -4,3 +4,4 @@ watchdog
 pandas
 matplotlib
 numpy
+sympy
