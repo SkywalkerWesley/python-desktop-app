@@ -183,7 +183,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
                                     self.co2CalZeroLineEdit, self.co2Cal6ulLineEdit, self.co2Cal12ulLineEdit, self.co2Cal18ulLineEdit,
                                     self.biCarbCalZeroLineEdit, self.biCarbCal2ulLineEdit, self.biCarbCal4ulLineEdit,
                                     self.biCarbCal6ulLineEdit]
-                                    
 
         # Add curves and Mean bar to the real time plot
         self.addCurveAndMeanBar()
@@ -818,8 +817,16 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customCalculationPlots.setContentsMargins(0, 10, 0, 0)
 
         self.calculationPlotGraph2 = Graph(100, 100)
-        self.calculationPlotGraph2.setLabel(axis='bottom', text='d²/dt² Mass44')
-        self.calculationPlotGraph2.setLabel(axis='left', text='d²/dt² Mass45')
+        self.calculationPlotGraph2.setLabel(axis='bottom', text='Time')
+        self.calculationPlotGraph2.setLabel(axis='left', text='d²/dt² Mass44')
+
+        # Curve
+        self.calculationPlotGraph2Curve = pg.PlotDataItem(skipFiniteCheck=True, clipToView=True, useOpenGL=True)
+        self.calculationPlotGraph2Curve.setPen(color='#800000', width=4)
+        self.calculationPlotGraph2.setClipToView(True)
+        self.calculationPlotGraph2.addItem(self.calculationPlotGraph2Curve)
+
+
         self.customPlotGraphLayout.addWidget(self.calculationPlotGraph2)
 
         ################################## Add Data Buttons #####################################################
@@ -1212,25 +1219,23 @@ class LabViewModule1(QtWidgets.QMainWindow):
             mask = np.isfinite(times) & np.isfinite(m44) & np.isfinite(m45)
             times, m44, m45 = times[mask], m44[mask], m45[mask]
 
-            #Clear the plot
-            self.calculationPlotGraph2.clear()
-
             if times.size >= 3:
                 #First derivatives
                 d1_m44 = np.gradient(m44, times, edge_order=2)
-                d1_m45 = np.gradient(m45, times, edge_order=2)
+                # d1_m45 = np.gradient(m45, times, edge_order=2)
+
                 #Second derivatives
                 d2_m44 = np.gradient(d1_m44, times, edge_order=2)
-                d2_m45 = np.gradient(d1_m45, times, edge_order=2)
+                # d2_m45 = np.gradient(d1_m45, times, edge_order=2)
 
                 #Drop endpoints if we only want central accuracy
                 #d2_m44 = d2_m44[1:-1]; d2_m45 = d2_m45[1:-1]
+                self.calculationPlotGraph2Curve.setData(x=times, y=m44)
 
-                self.calculationPlotGraph2.plot(
-                    d2_m44, d2_m45,
-                    pen=None, symbol='o', symbolBrush='r'
-                )
-                self.autoRangeToData(d2_m44.tolist(), d2_m45.tolist(), self.calculationPlotGraph2, 0.1)
+                # Rescales Range
+                self.calculationPlotGraph2.setXRange(times[0], times[-1])
+                self.calculationPlotGraph2.setYRange(m44[0], m44[-1])
+
             #else: fewer than 3 points means not enough to compute 2nd derivative, leave graph empty
 
     def processDataThroughCustomEquations(self, data):
@@ -1415,6 +1420,18 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.calculationPlotTable.clear()
         self.calculationPlotTable.setRowCount(0)
 
+    def getLineOfBestFit(self, xData, yData):
+        """
+        Slope and intercept of first degree line of best fit
+        :param xData: list of x points
+        :param yData: list of y points
+        :return:
+        """
+        nx = np.array(xData, dtype=float)
+        ny = np.array(yData, dtype=float)
+        slope, intercept = np.polyfit(ny, nx, 1)
+
+        return slope, intercept
 ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
 
