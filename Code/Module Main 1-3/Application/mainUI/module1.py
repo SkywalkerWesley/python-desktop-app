@@ -813,9 +813,14 @@ class LabViewModule1(QtWidgets.QMainWindow):
         ################################## Graph #####################################################
         self.calculationPlotGraph = Graph(100, 100)
 
-        self.customPlotGraphLayout = QtWidgets.QVBoxLayout()
+        self.customPlotGraphLayout = QtWidgets.QHBoxLayout()
         self.customPlotGraphLayout.addWidget(self.calculationPlotGraph)
         self.customCalculationPlots.setContentsMargins(0, 10, 0, 0)
+
+        self.calculationPlotGraph2 = Graph(100, 100)
+        self.calculationPlotGraph2.setLabel(axis='bottom', text='d²/dt² Mass44')
+        self.calculationPlotGraph2.setLabel(axis='left', text='d²/dt² Mass45')
+        self.customPlotGraphLayout.addWidget(self.calculationPlotGraph2)
 
         ################################## Add Data Buttons #####################################################
         self.calculationPlotAddDataButton = Button("Add Data", 120, 26)
@@ -1179,6 +1184,53 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # adds points to plot
         self.calculationPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
         self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.calculationPlotGraph, 0.1)
+
+        #Second graph on the calculations tab, d²/dt² Mass44 (X) vs d²/dt² Mass45 (Y)
+        #First make sure graph actually exist
+        if hasattr(self, "calculationPlotGraph2"):
+            #Gather Time, Mass44, Mass45 using variable mapper
+            times = []
+            m44 = []
+            m45 = []
+            for d in data:
+                v = self.getVarsDict(d)  #expects keys: "Time", "Mass44", "Mass45"
+                #Guard in case any are missing
+                if v is None or "Time" not in v or "Mass44" not in v or "Mass45" not in v:
+                    continue
+                times.append(v["Time"])
+                m44.append(v["Mass44"])
+                m45.append(v["Mass45"])
+
+            #Convert to numpy arrays and clean invalids
+            #Doing this so we can use vector math
+            times = np.asarray(times, dtype=float)
+            m44 = np.asarray(m44, dtype=float)
+            m45 = np.asarray(m45, dtype=float)
+
+            #This removes bad or missing points
+            mask = np.isfinite(times) & np.isfinite(m44) & np.isfinite(m45)
+            times, m44, m45 = times[mask], m44[mask], m45[mask]
+
+            #Clear the plot
+            self.calculationPlotGraph2.clear()
+
+            if times.size >= 3:
+                #First derivatives
+                d1_m44 = np.gradient(m44, times, edge_order=2)
+                d1_m45 = np.gradient(m45, times, edge_order=2)
+                #Second derivatives
+                d2_m44 = np.gradient(d1_m44, times, edge_order=2)
+                d2_m45 = np.gradient(d1_m45, times, edge_order=2)
+
+                #Drop endpoints if we only want central accuracy
+                #d2_m44 = d2_m44[1:-1]; d2_m45 = d2_m45[1:-1]
+
+                self.calculationPlotGraph2.plot(
+                    d2_m44, d2_m45,
+                    pen=None, symbol='o', symbolBrush='r'
+                )
+                self.autoRangeToData(d2_m44.tolist(), d2_m45.tolist(), self.calculationPlotGraph2, 0.1)
+            #else: fewer than 3 points means not enough to compute 2nd derivative, leave graph empty
 
     def processDataThroughCustomEquations(self, data):
         """ Processes data through the custom equations
