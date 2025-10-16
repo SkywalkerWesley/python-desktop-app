@@ -637,6 +637,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.co2ZeroLineEdit1 = LineEdit()
         self.co2ZeroLineEdit2 = LineEdit()
 
+        self.blankSlopeLineEdit = LineEdit()
+        self.extractSlopeLineEdit = LineEdit()
+
         self.lineEditList.extend([self.co2LineEdit1, self.co2LineEdit2, self.co2LineEdit3, self.co2LineEdit4, self.o2LineEdit1, self.o2LineEdit2, self.o2LineEdit3, self.o2LineEdit4])
         self.lineEditList.extend([self.co2ZeroLineEdit1, self.co2ZeroLineEdit2])
         
@@ -650,13 +653,16 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.blankButton = Button("Blank", 120, 26)
         self.extractButton = Button("Extract", 120, 26)
 
+        self.blankSlopeButton = Button("Blank Slope", 120, 26)
+        self.extractSlopeButton = Button("Extract Slope", 120, 26)
+
         self.co2ZeroButton = Button("CO2 Zero", 120, 26)
 
 
         # Creating a QGrid Layout
         self.co2o2GridLayout = QtWidgets.QGridLayout()
-        self.co2o2GridLayout.addWidget(self.co2Zero44Label, 1, 2, 2, 1, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.co2Zero45Label, 1, 3, 2, 1, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2Zero44Label, 1, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2Zero45Label, 1, 3, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.co2ZeroButton, 2, 1, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.co2ZeroLineEdit1, 2, 2, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.co2ZeroLineEdit2, 2, 3, alignment=QtCore.Qt.AlignCenter)
@@ -666,13 +672,21 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.co2o2GridLayout.addWidget(self.blankButton, 4, 1, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.co2LineEdit1, 4, 2, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.o2LineEdit1, 4, 3, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.extractButton, 5, 1, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.co2LineEdit2, 5, 2, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.o2LineEdit2, 5, 3, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.co2LineEdit3, 6, 2, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.o2LineEdit3, 6, 3, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.co2LineEdit4, 7, 2, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.o2LineEdit4, 7, 3, alignment=QtCore.Qt.AlignCenter)
+
+        self.co2o2GridLayout.addWidget(self.blankSlopeButton, 5, 1, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.blankSlopeLineEdit, 5, 2, alignment=QtCore.Qt.AlignCenter)
+
+        self.co2o2GridLayout.addWidget(self.extractButton, 6, 1, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2LineEdit2, 6, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.o2LineEdit2, 6, 3, alignment=QtCore.Qt.AlignCenter)
+
+        self.co2o2GridLayout.addWidget(self.extractSlopeButton, 7, 1, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.extractSlopeLineEdit, 7, 2, alignment=QtCore.Qt.AlignCenter)
+
+        self.co2o2GridLayout.addWidget(self.co2LineEdit3, 8, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.o2LineEdit3, 8, 3, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2LineEdit4, 9, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.o2LineEdit4, 9, 3, alignment=QtCore.Qt.AlignCenter)
 
         #################################################################################################
 
@@ -1071,7 +1085,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.yAxisLineEdit.returnPressed.connect(lambda: self.updateCustomCalcPlots())
 
         # adds export table buttons
-        self.calculationPlotExportTableButton.clicked.connect(lambda: self.exportSamleTable())
+        self.calculationPlotExportTableButton.clicked.connect(lambda: self.exportSampleTable())
         self.calculationPlotClearTableButton.clicked.connect(self.clearSampleData)
 
         # Adds delt button to table
@@ -1330,7 +1344,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         keyValues = [(k, self.sharedData.dataPoints[k]) for k in keys]
         return keyValues
 
-    def exportSamleTable(self):
+    def exportSampleTable(self):
         """
         Exports data from samle table to csv file
         :return:
