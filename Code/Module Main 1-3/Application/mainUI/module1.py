@@ -637,12 +637,15 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.co2ZeroLineEdit1 = LineEdit()
         self.co2ZeroLineEdit2 = LineEdit()
 
-        self.blankSlopeLineEdit = LineEdit()
-        self.extractSlopeLineEdit = LineEdit()
+        self.blankSlope44LineEdit = LineEdit()
+        self.extractSlope44LineEdit = LineEdit()
+
+        self.blankSlope45LineEdit = LineEdit()
+        self.extractSlope45LineEdit = LineEdit()
 
         self.lineEditList.extend([self.co2LineEdit1, self.co2LineEdit2, self.co2LineEdit3, self.co2LineEdit4, self.o2LineEdit1, self.o2LineEdit2, self.o2LineEdit3, self.o2LineEdit4])
         self.lineEditList.extend([self.co2ZeroLineEdit1, self.co2ZeroLineEdit2])
-        
+
         # Initializing QLabels
         self.co2Label = QtWidgets.QLabel("CO2")
         self.o2Label = QtWidgets.QLabel("O2")
@@ -674,20 +677,21 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.co2o2GridLayout.addWidget(self.o2LineEdit1, 4, 3, alignment=QtCore.Qt.AlignCenter)
 
         self.co2o2GridLayout.addWidget(self.blankSlopeButton, 5, 1, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.blankSlopeLineEdit, 5, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.blankSlope44LineEdit, 5, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.blankSlope45LineEdit, 5, 3, alignment=QtCore.Qt.AlignCenter)
 
         self.co2o2GridLayout.addWidget(self.extractButton, 6, 1, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.co2LineEdit2, 6, 2, alignment=QtCore.Qt.AlignCenter)
         self.co2o2GridLayout.addWidget(self.o2LineEdit2, 6, 3, alignment=QtCore.Qt.AlignCenter)
 
-        self.co2o2GridLayout.addWidget(self.extractSlopeButton, 7, 1, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.extractSlopeLineEdit, 7, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2LineEdit3, 7, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.o2LineEdit3, 7, 3, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.co2LineEdit4, 8, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.o2LineEdit4, 8, 3, alignment=QtCore.Qt.AlignCenter)
 
-        self.co2o2GridLayout.addWidget(self.co2LineEdit3, 8, 2, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.o2LineEdit3, 8, 3, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.co2LineEdit4, 9, 2, alignment=QtCore.Qt.AlignCenter)
-        self.co2o2GridLayout.addWidget(self.o2LineEdit4, 9, 3, alignment=QtCore.Qt.AlignCenter)
-
+        self.co2o2GridLayout.addWidget(self.extractSlopeButton, 8, 1, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.extractSlope44LineEdit, 8, 2, alignment=QtCore.Qt.AlignCenter)
+        self.co2o2GridLayout.addWidget(self.extractSlope45LineEdit, 8, 3, alignment=QtCore.Qt.AlignCenter)
         #################################################################################################
 
 
@@ -893,13 +897,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.customCalculationPlotsLayout.addLayout(self.calculationPlotButtonLayoutAxisGraph, 1, 1)
         self.customCalculationPlotsLayout.setColumnStretch(1,3)
         self.customCalculationPlotsLayout.addLayout(tableHalfLayout, 1, 2)
-
+        self.customCalculationPlots.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.customCalculationPlots.setLayout(self.customCalculationPlotsLayout)
 
     def initializeQFrames(self):
         # create invisable resizable widget
         resizableWidget = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-
+        resizableWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
         # Creating a QFrame from User defined QFrame class.
         self.calculatedPlotsFrame = Frame(self.scrollArea, 0.7)
         self.customCalculationPlots = Frame(self.scrollArea, 0.7)
@@ -908,10 +912,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Container frame that holds the tab widget
         self.tabbedContainerFrame = Frame(self.scrollArea, 0.7)
-
         self.tabbedContainerLayout = QtWidgets.QVBoxLayout()
         self.tabbedContainerFrame.setLayout(self.tabbedContainerLayout)
-
+        self.tabbedContainerLayout.setContentsMargins(0, 0, 0, 0)
         # QTabWidget inside the container frame
         self.tabWidget = QtWidgets.QTabWidget()
         self.tabbedContainerLayout.addWidget(self.tabWidget)
@@ -925,7 +928,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         innerScroll = QtWidgets.QScrollArea()
         innerScroll.setWidgetResizable(True)
         innerScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        innerScroll.setFrameShape(QFrame.NoFrame)
         innerScroll.setWidget(self.customCalculationPlots)
 
         self.tabWidget.addTab(innerScroll, "Calculations")
@@ -1203,8 +1205,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
             equationPlotDataX.append(x)
             equationPlotDataY.append(y)
 
-        # adds points to plot
+        lineOfBestFitX, lineOfBestFitY = self.xyGraphLineOfBestFit(equationPlotDataX, equationPlotDataY)
+
+        # adds points to plot and line of best fit
+        self.calculationPlotGraph.plot(lineOfBestFitX, lineOfBestFitY, pen=pg.mkPen(color=(255, 0, 0), width=2, style=QtCore.Qt.DashLine))
         self.calculationPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
+
         self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.calculationPlotGraph, 0.1)
 
         #Second graph on the calculations tab, d²/dt² Mass44 (X) vs d²/dt² Mass45 (Y)
@@ -1441,12 +1447,30 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :param yData: list of y points
         :return:
         """
-        nx = np.array(xData, dtype=float)
-        ny = np.array(yData, dtype=float)
-        slope, intercept = np.polyfit(ny, nx, 1)
+        try:
+            nx = np.array(xData, dtype=float)
+            ny = np.array(yData, dtype=float)
+            slope, intercept = np.polyfit(nx, ny, 1)
+            return slope, intercept
+        except:
+            return None, None
 
-        return slope, intercept
-################################################# End - Calculation Helper Methods ##############################################
+    def xyGraphLineOfBestFit(self, xData, yData):
+        """
+        Return the endpoints of line of best fit for given data
+        :param xData:
+        :param yData:
+        :return:
+        """
+        slope, intercept = self.getLineOfBestFit(xData, yData)
+        if slope and intercept:
+            xMin, xMax = min(xData), max(xData)
+            x = [xMin, xMax]
+            y = [slope * xMin + intercept, slope * xMax + intercept]
+            return x, y
+        return [], []
+
+    ################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
 
 #################################################################################################################################
