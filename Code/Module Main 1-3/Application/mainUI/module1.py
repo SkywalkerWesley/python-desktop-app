@@ -151,8 +151,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.folder_path = ''
 
         # Custom Plot axises
-        self.xAxisEquiation = sympify("ln(Mass44)")
-        self.yAxisEquiation = sympify("ln(Mass45)")
+        self.xAxisEquiation = sympify("ln(Mass44 - CO2Zero44)")
+        self.yAxisEquiation = sympify("ln(Mass45 - CO2Zero45)")
 
         # List for holding custom plot data
         self.samplePlotData = []
