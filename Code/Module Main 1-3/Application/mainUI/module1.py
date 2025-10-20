@@ -1473,8 +1473,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :return:
         """
         slope, intercept = self.getLineOfBestFit(xData, yData)
-        print(slope, intercept)
-        print(xData, yData)
+
         if slope and intercept:
             xMin, xMax = min(xData), max(xData)
             x = [xMin, xMax]
@@ -1493,8 +1492,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
         slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
-        print(slope44, slope45)
-        print([t[0] for t in data], [t[1][3] for t in data])
+
         self.blankSlope44LineEdit.setText(str(slope44))
         self.blankSlope45LineEdit.setText(str(slope45))
 
@@ -1503,6 +1501,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
         slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
+
         self.extractSlope44LineEdit.setText(str(slope44))
         self.extractSlope45LineEdit.setText(str(slope45))
     def stopButtonPressed(self):
