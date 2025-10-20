@@ -1070,6 +1070,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Export Table connect method
         self.exportTableButton.clicked.connect(lambda: self.tableFileSave(self.table))
 
+        ################################## Blank and Extract slope button ##################################
+
+        self.blankSlopeButton.clicked.connect(self.blankSlopeButtonPressed)
+        self.extractSlopeButton.clicked.connect(self.extractSlopeButtonPressed)
+
         ################################## Custom Plot Calc ##################################
 
         # Update Calculation Plots from mean bar moved
@@ -1202,8 +1207,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # processes data
         for d in data:
             x, y = self.processDataThroughCustomEquations(d)
-            equationPlotDataX.append(x)
-            equationPlotDataY.append(y)
+            if x and y:
+                equationPlotDataX.append(x)
+                equationPlotDataY.append(y)
 
         lineOfBestFitX, lineOfBestFitY = self.xyGraphLineOfBestFit(equationPlotDataX, equationPlotDataY)
 
@@ -1305,7 +1311,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # subsitudes values in for vars
         x = self.xAxisEquiation.subs(subsVarsX)
         y = self.yAxisEquiation.subs(subsVarsY)
-        return float(x), float(y)
+        try:
+            return float(x), float(y)
+        except:
+            return None, None
 
     def getVarsDict(self, data):
         """
@@ -1317,8 +1326,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # list of custom variables
         vars = {"Mass32": Masses[0], "Mass34": Masses[1], "Mass36": Masses[2], "Mass44": Masses[3], "Mass45": Masses[4],
-                "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7],
-                "Time": data[0]}
+                "Mass46": Masses[5], "Mass47": Masses[6], "Mass49": Masses[7], "Time": data[0],
+                "BlankSlope44": self.blankSlope44LineEdit.text(), "BlankSlope45": self.blankSlope45LineEdit.text(), "ExtractSlope44": self.extractSlope44LineEdit.text(), "ExtractSlope45": self.extractSlope45LineEdit.text(),
+                "CO2Zero44": self.co2ZeroLineEdit1.text(), "CO2Zero45": self.co2ZeroLineEdit2.text()}
         return vars
 
     def customPlotTableContexWindow(self, table, position: QPoint):
@@ -1463,6 +1473,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :return:
         """
         slope, intercept = self.getLineOfBestFit(xData, yData)
+        print(slope, intercept)
+        print(xData, yData)
         if slope and intercept:
             xMin, xMax = min(xData), max(xData)
             x = [xMin, xMax]
@@ -1476,6 +1488,23 @@ class LabViewModule1(QtWidgets.QMainWindow):
 #################################################################################################################################
 ##################################################### ButtonPressed Methods #####################################################
 
+    def blankSlopeButtonPressed(self):
+        data = self.getAllMeanBarData()
+
+        slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
+        slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
+        print(slope44, slope45)
+        print([t[0] for t in data], [t[1][3] for t in data])
+        self.blankSlope44LineEdit.setText(str(slope44))
+        self.blankSlope45LineEdit.setText(str(slope45))
+
+    def extractSlopeButtonPressed(self):
+        data = self.getAllMeanBarData()
+
+        slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
+        slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
+        self.extractSlope44LineEdit.setText(str(slope44))
+        self.extractSlope45LineEdit.setText(str(slope45))
     def stopButtonPressed(self):
         self.throwStopButtonWarning()
 
