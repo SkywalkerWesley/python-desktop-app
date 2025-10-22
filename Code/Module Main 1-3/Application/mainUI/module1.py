@@ -153,7 +153,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         # Custom Plot axises
         self.xAxisEquiation = sympify("ln(Mass44 - CO2Zero44)")
         self.yAxisEquiation = sympify("ln(Mass45 - CO2Zero45)")
-
+        self.sampleEquationXPlotData = []
+        self.sampleEquationYPlotData = []
         # List for holding custom plot data
         self.samplePlotData = []
 
@@ -1202,14 +1203,23 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         equationPlotDataX = []
         equationPlotDataY = []
-
+        self.sampleEquationXPlotData = []
+        self.sampleEquationYPlotData = []
         i = 0
+
+        # Make it so only one error is thrown
+        throwError = True
+
         # processes data
         for d in data:
-            x, y = self.processDataThroughCustomEquations(d)
-            if x and y:
+            valid, x, y = self.processDataThroughCustomEquations(d, throwError)
+            self.sampleEquationXPlotData.append(x)
+            self.sampleEquationYPlotData.append(y)
+            if valid:
                 equationPlotDataX.append(x)
                 equationPlotDataY.append(y)
+            else:
+                throwError = False
 
         lineOfBestFitX, lineOfBestFitY = self.xyGraphLineOfBestFit(equationPlotDataX, equationPlotDataY)
 
@@ -1264,14 +1274,15 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
             #else: fewer than 3 points means not enough to compute 2nd derivative, leave graph empty
 
-    def processDataThroughCustomEquations(self, data):
+    def processDataThroughCustomEquations(self, data, throwError=True):
         """ Processes data through the custom equations
             :param {data : Data}
+            :param {throwError : bool} if true tell the user error
         """
 
         # Data is invalid users should have been warned already
         if data is None:
-            return
+            return None, None, None
 
         vars = self.getVarsDict(data)
         equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
@@ -1283,9 +1294,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 badVars.append(var)
 
         if len(badVars) != 0:
-            self.throwTellUserDilog("Bad Variables Found", f"The following variables are not valid: {badVars}")
-            return
-
+            if throwError:
+                self.throwTellUserDilog("Bad Variables Found", f"The following variables are not valid: {badVars}")
+            return None, None, None
 
         subsVarsX = {}
         subsVarsY = {}
@@ -1295,8 +1306,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
             name = str(var)
             val = vars[name]
             if not self.isFloat(str(val)):
-                self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
-                return
+                if throwError:
+                    self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
+                return None, None, None
+
             subsVarsX[name] = val
 
         # processes defalt vars for y
@@ -1304,17 +1317,19 @@ class LabViewModule1(QtWidgets.QMainWindow):
             name = str(var)
             val = vars[name]
             if not self.isFloat(str(val)):
-                self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
-                return
+                if throwError:
+                    self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
+                return None, None, None
+
             subsVarsY[name] = val
 
         # subsitudes values in for vars
         x = self.xAxisEquiation.subs(subsVarsX)
         y = self.yAxisEquiation.subs(subsVarsY)
         try:
-            return float(x), float(y)
+            return True, float(x), float(y)
         except:
-            return None, None
+            return False, x, y
 
     def getVarsDict(self, data):
         """
@@ -1409,13 +1424,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         equationXName = self.xAxisLineEdit.text()
         equationYName = self.yAxisLineEdit.text()
 
-        equationXData = None
-        equatoinYData = None
-
-        for item in self.calculationPlotGraph.listDataItems():
-            x, y = item.getData()
-            equationXData = x
-            equatoinYData = y
+        equationXData = self.sampleEquationXPlotData
+        equatoinYData = self.sampleEquationYPlotData
 
         sampleData.append((equationXName, equationXData))
         sampleData.append((equationYName, equatoinYData))
@@ -1433,6 +1443,17 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         for k in rawData.keys():
             sampleData.append((k, rawData[k]))
+        #################### Adds Blank slope ####################
+        sampleData.append(("Blank Slope 44", [self.blankSlope44LineEdit.text()]))
+        sampleData.append(("Blank Slope 45", [self.blankSlope45LineEdit.text()]))
+        
+        #################### Adds Extract slope ####################
+        sampleData.append(("Extract Slope 44", [self.extractSlope44LineEdit.text()]))
+        sampleData.append(("Extract Slope 45", [self.extractSlope45LineEdit.text()]))
+
+        #################### Adds line of best fit ####################
+        slope, intecept = self.getLineOfBestFit(equationXData, equatoinYData)
+        sampleData.append(("Line Of Best Fit", ["" + str(slope) +"*x"+ " + " + str(intecept)]))
 
         #################### Adds Data to save ####################
         self.samplePlotData.append(sampleData)
@@ -1458,10 +1479,19 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :return:
         """
         try:
-            nx = np.array(xData, dtype=float)
-            ny = np.array(yData, dtype=float)
-            slope, intercept = np.polyfit(nx, ny, 1)
-            return slope, intercept
+            try:
+                nx = np.array(xData, dtype=float)
+                ny = np.array(yData, dtype=float)
+
+                if len(nx) < 2 or np.allclose(nx, nx[0]):
+                    return None, None
+                
+                A = np.vstack([nx, np.ones(len(nx))]).T
+                slope, intercept = np.linalg.lstsq(A, ny, rcond=None)[0]
+
+                return slope, intercept
+            except Exception:
+                return None, None
         except:
             return None, None
 
