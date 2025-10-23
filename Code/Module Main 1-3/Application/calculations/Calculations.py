@@ -8,6 +8,7 @@ __status__ = "Completed"
 """
 
 from statistics import mean
+import numpy as np
 
 
 class Calculations:
@@ -188,3 +189,46 @@ class Calculations:
         atom49_percent = atom49_percent * 100
         return atom49_percent
 
+    @staticmethod
+    def getLineOfBestFit(xData, yData):
+        """
+        Slope and intercept of first degree line of best fit
+        :param xData: list of x points
+        :param yData: list of y points
+        :return slope, intercept or if invalid None, None:
+        """
+        try:
+            try:
+                nx = np.array(xData, dtype=float)
+                ny = np.array(yData, dtype=float)
+
+                if len(nx) < 2 or np.allclose(nx, nx[0]):
+                    return None, None
+
+                A = np.vstack([nx, np.ones(len(nx))]).T
+                slope, intercept = np.linalg.lstsq(A, ny, rcond=None)[0]
+
+                return slope, intercept
+            except Exception:
+                return None, None
+        except:
+            return None, None
+
+    @staticmethod
+    def rSquared(xData, yData):
+        """
+        r^2 of x and y data
+        :param xData:
+        :param yData:
+        :return r2:
+        """
+        x = np.array(xData, dtype=float)
+        y = np.array(yData, dtype=float)
+        slope, intercept = Calculations.getLineOfBestFit(xData, yData)
+        yPred = slope * x + intercept
+
+        ssRes = np.sum((y - yPred) ** 2)
+        ssTot = np.sum((y - np.mean(y)) ** 2)
+
+        r2 = 1 - (ssRes / ssTot)
+        return r2

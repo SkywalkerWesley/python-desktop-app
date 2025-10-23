@@ -1266,11 +1266,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
                 #Drop endpoints if we only want central accuracy
                 #d2_m44 = d2_m44[1:-1]; d2_m45 = d2_m45[1:-1]
-                self.calculationPlotGraph2Curve.setData(x=times, y=m44)
+                self.calculationPlotGraph2Curve.setData(x=times, y=d2_m44)
 
                 # Rescales Range
                 self.calculationPlotGraph2.setXRange(times[0], times[-1])
-                self.calculationPlotGraph2.setYRange(m44[0], m44[-1])
+                self.calculationPlotGraph2.setYRange(min(d2_m44), max(d2_m44))
 
             #else: fewer than 3 points means not enough to compute 2nd derivative, leave graph empty
 
@@ -1452,8 +1452,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         sampleData.append(("Extract Slope 45", [self.extractSlope45LineEdit.text()]))
 
         #################### Adds line of best fit ####################
-        slope, intecept = self.getLineOfBestFit(equationXData, equatoinYData)
+        slope, intecept = Calculations.getLineOfBestFit(equationXData, equatoinYData)
         sampleData.append(("Line Of Best Fit", ["" + str(slope) +"*x"+ " + " + str(intecept)]))
+
+        #################### Adds R^2 ####################
+        r2 = Calculations.rSquared(equationXData, equatoinYData)
+        sampleData.append(("R^2", [str(r2)]))
 
         #################### Adds Data to save ####################
         self.samplePlotData.append(sampleData)
@@ -1471,30 +1475,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.calculationPlotTable.clear()
         self.calculationPlotTable.setRowCount(0)
 
-    def getLineOfBestFit(self, xData, yData):
-        """
-        Slope and intercept of first degree line of best fit
-        :param xData: list of x points
-        :param yData: list of y points
-        :return:
-        """
-        try:
-            try:
-                nx = np.array(xData, dtype=float)
-                ny = np.array(yData, dtype=float)
-
-                if len(nx) < 2 or np.allclose(nx, nx[0]):
-                    return None, None
-                
-                A = np.vstack([nx, np.ones(len(nx))]).T
-                slope, intercept = np.linalg.lstsq(A, ny, rcond=None)[0]
-
-                return slope, intercept
-            except Exception:
-                return None, None
-        except:
-            return None, None
-
     def xyGraphLineOfBestFit(self, xData, yData):
         """
         Return the endpoints of line of best fit for given data
@@ -1502,7 +1482,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         :param yData:
         :return:
         """
-        slope, intercept = self.getLineOfBestFit(xData, yData)
+        slope, intercept = Calculations.getLineOfBestFit(xData, yData)
 
         if slope and intercept:
             xMin, xMax = min(xData), max(xData)
@@ -1520,8 +1500,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def blankSlopeButtonPressed(self):
         data = self.getAllMeanBarData()
 
-        slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
-        slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
+        slope44, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
+        slope45, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
 
         self.blankSlope44LineEdit.setText(str(slope44))
         self.blankSlope45LineEdit.setText(str(slope45))
@@ -1529,8 +1509,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
     def extractSlopeButtonPressed(self):
         data = self.getAllMeanBarData()
 
-        slope44, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
-        slope45, _ = self.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
+        slope44, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
+        slope45, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
 
         self.extractSlope44LineEdit.setText(str(slope44))
         self.extractSlope45LineEdit.setText(str(slope45))
