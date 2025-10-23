@@ -73,7 +73,7 @@ class PlotAllThread(QObject):
                 #### Send singal to update the data point.
                 self.newDataPointSignal.emit(dataPoints)
 
-                self.globalObject.application_state == "Out_Of_Data"
+                self.globalObject.application_state = "Out_Of_Data"
 
                 #### Send signal to throw exception.
                 self.throwOutOfDataExceptionSignal.emit()

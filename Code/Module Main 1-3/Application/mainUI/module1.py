@@ -1560,10 +1560,13 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.plotAllThread.throwFolderNotSelectedExceptionSignal.connect(self.throwFolderNotSelectedException)
         self.plotAllThread.filesParsedSignal.connect(self.startNewFileNotifier)
 
+        # Set proper state while plotting
+        self.startBit = True
         self.pauseBit = False
+        self.application_state = "Running"
+        self.startButton.setEnabled(False)
         self.pauseResumeButton.setText("Pause")
         self.pauseResumeButton.setToolTip('Pause the graph')
-        self.application_state = "Out_Of_Data"
 
         self.plotAllThread.finished.connect(self.endPlotAllThread)
         self.plotAllThread.finished.connect(self.plotAllThread.deleteLater)
@@ -2359,6 +2362,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.plotAllButtonThread.wait()
         self.plotAllButtonThread.deleteLater()
         self.plotAllButton.setEnabled(True)
+
+        self.startBit = False
+        self.pauseBit = True
+        self.startButton.setEnabled(True)
+        self.pauseResumeButton.setText("Resume")
+        self.pauseResumeButton.setToolTip('Resume the graph')
 
     # change-file-reading
     # Start the thread as soon all files are read.
