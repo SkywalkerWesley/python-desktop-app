@@ -841,7 +841,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # Curve
         self.calculationPlotGraph2Curve = pg.PlotDataItem(skipFiniteCheck=True, clipToView=True, useOpenGL=True)
-        self.calculationPlotGraph2Curve.setPen(color='#800000', width=4)
+        self.calculationPlotGraph2Curve.setPen(color='#4363d8', width=4)
         self.calculationPlotGraph2.setClipToView(True)
         self.calculationPlotGraph2.addItem(self.calculationPlotGraph2Curve)
 
@@ -1229,50 +1229,44 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.calculationPlotGraph, 0.1)
 
-        #Second graph on the calculations tab, d²/dt² Mass44 (X) vs d²/dt² Mass45 (Y)
-        #First make sure graph actually exist
+        # Second graph on the calculations tab: Time (X) vs d²/dt²(Mass44) (Y)
         if hasattr(self, "calculationPlotGraph2"):
-            #Gather Time, Mass44, Mass45 using variable mapper
+            # Collect Time and Mass44
             times = []
             m44 = []
-            m45 = []
             for d in data:
-                v = self.getVarsDict(d)  #expects keys: "Time", "Mass44", "Mass45"
-                #Guard in case any are missing
-                if v is None or "Time" not in v or "Mass44" not in v or "Mass45" not in v:
+                v = self.getVarsDict(d)  # expects keys: "Time", "Mass44"
+                if v is None or "Time" not in v or "Mass44" not in v:
                     continue
                 times.append(v["Time"])
                 m44.append(v["Mass44"])
-                m45.append(v["Mass45"])
 
-            #Convert to numpy arrays and clean invalids
-            #Doing this so we can use vector math
+            # To numpy + clean invalids
             times = np.asarray(times, dtype=float)
             m44 = np.asarray(m44, dtype=float)
-            m45 = np.asarray(m45, dtype=float)
-
-            #This removes bad or missing points
-            mask = np.isfinite(times) & np.isfinite(m44) & np.isfinite(m45)
-            times, m44, m45 = times[mask], m44[mask], m45[mask]
+            mask = np.isfinite(times) & np.isfinite(m44)
+            times, m44 = times[mask], m44[mask]
 
             if times.size >= 3:
-                #First derivatives
+                # First derivative wrt uneven time steps
                 d1_m44 = np.gradient(m44, times, edge_order=2)
-                # d1_m45 = np.gradient(m45, times, edge_order=2)
-
-                #Second derivatives
+                # Second derivative
                 d2_m44 = np.gradient(d1_m44, times, edge_order=2)
-                # d2_m45 = np.gradient(d1_m45, times, edge_order=2)
 
-                #Drop endpoints if we only want central accuracy
-                #d2_m44 = d2_m44[1:-1]; d2_m45 = d2_m45[1:-1]
+                # Plot: X = time, Y = d²/dt²(Mass44)
                 self.calculationPlotGraph2Curve.setData(x=times, y=d2_m44)
 
-                # Rescales Range
-                self.calculationPlotGraph2.setXRange(times[0], times[-1])
-                self.calculationPlotGraph2.setYRange(min(d2_m44), max(d2_m44))
-
-            #else: fewer than 3 points means not enough to compute 2nd derivative, leave graph empty
+                # Rescale view
+                self.calculationPlotGraph2.setXRange(times[0], times[-1], padding=0)
+                y_min, y_max = float(np.min(d2_m44)), float(np.max(d2_m44))
+                if y_min == y_max:
+                    pad = 1.0 if y_min == 0 else abs(y_min) * 0.1
+                    y_min -= pad;
+                    y_max += pad
+                self.calculationPlotGraph2.setYRange(y_min, y_max)
+            else:
+                # Not enough points for 2nd derivative → clear curve
+                self.calculationPlotGraph2Curve.setData([], [])
 
     def processDataThroughCustomEquations(self, data, throwError=True):
         """ Processes data through the custom equations
