@@ -24,6 +24,7 @@ from sympy import sympify
 from fontTools.feaLib import ast
 from numpy.ma.core import equal
 
+from SamplePlotCalcWorker import SamplePlotCalcWorker
 from worker import Worker
 from newFileNotifierThread import NewFileNotifierThread
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QSize, QPoint
@@ -1195,135 +1196,109 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
     def updateCustomCalcPlots(self):
         """ Updates the custom calculation plots with data from the mean bar
+            Calls Async threads
         """
+        self.updateCustomCalcPlotsAsync()
+
+    def updateCustomCalcPlotsAsync(self):
+        """
+        Starts an new thread that updates calculation plots
+        :return:
+        """
+        # guard against multiple concurrent threads
+        t = getattr(self, "_calcThread", None)
+        if t is not None:
+            try:
+                if t.isRunning():
+                    return
+            except RuntimeError:
+                self._calcThread = None
+
         data = self.getAllMeanBarData()
 
-        # clears plots
-        self.calculationPlotGraph.clear()
+        # Snapshot equations on the main thread
+        xexp = self.xAxisEquiation
+        yexp = self.yAxisEquiation
 
-        equationPlotDataX = []
-        equationPlotDataY = []
-        self.sampleEquationXPlotData = []
-        self.sampleEquationYPlotData = []
-        i = 0
+        self._calcThread = QtCore.QThread(self)
+        self._calcWorker = SamplePlotCalcWorker(
+            data=data,
+            xexp=xexp,
+            yexp=yexp,
+            lineOfBestFit=self.xyGraphLineOfBestFit,
+            getVars=self.getVarsDict,
 
-        # Make it so only one error is thrown
-        throwError = True
+        )
 
-        # processes data
-        for d in data:
-            valid, x, y = self.processDataThroughCustomEquations(d, throwError)
-            self.sampleEquationXPlotData.append(x)
-            self.sampleEquationYPlotData.append(y)
-            if valid:
-                equationPlotDataX.append(x)
-                equationPlotDataY.append(y)
-            else:
-                throwError = False
+        self._calcWorker.moveToThread(self._calcThread)
+        self._calcThread.started.connect(self._calcWorker.run)
 
-        lineOfBestFitX, lineOfBestFitY = self.xyGraphLineOfBestFit(equationPlotDataX, equationPlotDataY)
+        # update plots on the GUI thread
+        self._calcWorker.resultReady.connect(self.applyCustomCalcResults)
 
-        # adds points to plot and line of best fit
-        self.calculationPlotGraph.plot(lineOfBestFitX, lineOfBestFitY, pen=pg.mkPen(color=(255, 0, 0), width=2, style=QtCore.Qt.DashLine))
-        self.calculationPlotGraph.plot(equationPlotDataX, equationPlotDataY, pen=None, symbol='o', symbolBrush='r')
+        # Clean up
+        self._calcWorker.finished.connect(self._calcThread.quit)
+        self._calcWorker.finished.connect(self._calcWorker.deleteLater)
+        self._calcThread.finished.connect(self._calcThread.deleteLater)
+        self._calcThread.finished.connect(lambda: setattr(self, "_calcThread", None))
 
-        self.autoRangeToData(equationPlotDataX, equationPlotDataY, self.calculationPlotGraph, 0.1)
+        # show warning to user on the main thread
+        self._calcWorker.userWarning.connect(
+            lambda msg: self.throwTellUserDilog("Calculation Warning", msg)
+        )
 
-        # Second graph on the calculations tab: Time (X) vs d²/dt²(Mass44) (Y)
-        if hasattr(self, "calculationPlotGraph2"):
-            # Collect Time and Mass44
-            times = []
-            m44 = []
-            for d in data:
-                v = self.getVarsDict(d)  # expects keys: "Time", "Mass44"
-                if v is None or "Time" not in v or "Mass44" not in v:
-                    continue
-                times.append(v["Time"])
-                m44.append(v["Mass44"])
+        # Errors
+        self._calcWorker.error.connect(
+            lambda msg: self.throwTellUserDilog("Calculation Error", msg)
+        )
+        self._calcThread.start()
 
-            # To numpy + clean invalids
-            times = np.asarray(times, dtype=float)
-            m44 = np.asarray(m44, dtype=float)
-            mask = np.isfinite(times) & np.isfinite(m44)
-            times, m44 = times[mask], m44[mask]
+    @QtCore.pyqtSlot(dict)
+    def applyCustomCalcResults(self, res):
+        """
+        Apply custom calculation results to Calculations tab
+        :param res:
+        :return:
+        """
+        try:
+            self.calculationPlotGraph.clear()
 
-            if times.size >= 3:
-                # First derivative wrt uneven time steps
-                d1_m44 = np.gradient(m44, times, edge_order=2)
-                # Second derivative
-                d2_m44 = np.gradient(d1_m44, times, edge_order=2)
+            # Equation graph
+            self.calculationPlotGraph.plot(
+                res["lbfX"], res["lbfY"],
+                pen=pg.mkPen(color=(255, 0, 0), width=2, style=QtCore.Qt.DashLine)
+            )
+            self.calculationPlotGraph.plot(
+                res["equationX"], res["equationY"],
+                pen=None, symbol='o', symbolBrush='r'
+            )
 
-                # Plot: X = time, Y = d²/dt²(Mass44)
-                self.calculationPlotGraph2Curve.setData(x=times, y=d2_m44)
+            self.autoRangeToData(res["equationX"], res["equationY"], self.calculationPlotGraph, 0.1)
+
+            # Time vs d²/dt²(Mass44)
+            if hasattr(self, "calculationPlotGraph2") and res.get("times") is not None and res.get(
+                    "d2_m44") is not None:
+                times = res["times"]
+                d2 = res["d2_m44"]
+                self.calculationPlotGraph2Curve.setData(x=times, y=d2)
 
                 # Rescale view
-                self.calculationPlotGraph2.setXRange(times[0], times[-1], padding=0)
-                y_min, y_max = float(np.min(d2_m44)), float(np.max(d2_m44))
+                self.calculationPlotGraph2.setXRange(float(times[0]), float(times[-1]))
+                y_min, y_max = float(np.min(d2)), float(np.max(d2))
                 if y_min == y_max:
                     pad = 1.0 if y_min == 0 else abs(y_min) * 0.1
-                    y_min -= pad;
+                    y_min -= pad
                     y_max += pad
                 self.calculationPlotGraph2.setYRange(y_min, y_max)
-            else:
-                # Not enough points for 2nd derivative → clear curve
+
+            elif hasattr(self, "calculationPlotGraph2"):
                 self.calculationPlotGraph2Curve.setData([], [])
 
-    def processDataThroughCustomEquations(self, data, throwError=True):
-        """ Processes data through the custom equations
-            :param {data : Data}
-            :param {throwError : bool} if true tell the user error
-        """
+            self.sampleEquationXPlotData = res["sampleX"]
+            self.sampleEquationYPlotData = res["sampleY"]
 
-        # Data is invalid users should have been warned already
-        if data is None:
-            return None, None, None
-
-        vars = self.getVarsDict(data)
-        equationVars = self.xAxisEquiation.free_symbols.union(self.yAxisEquiation.free_symbols)
-
-        # Test that all equation varable are valid
-        badVars = []
-        for var in equationVars:
-            if str(var) not in vars.keys():
-                badVars.append(var)
-
-        if len(badVars) != 0:
-            if throwError:
-                self.throwTellUserDilog("Bad Variables Found", f"The following variables are not valid: {badVars}")
-            return None, None, None
-
-        subsVarsX = {}
-        subsVarsY = {}
-
-        # processes defalt vars for x
-        for var in self.xAxisEquiation.free_symbols:
-            name = str(var)
-            val = vars[name]
-            if not self.isFloat(str(val)):
-                if throwError:
-                    self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
-                return None, None, None
-
-            subsVarsX[name] = val
-
-        # processes defalt vars for y
-        for var in self.yAxisEquiation.free_symbols:
-            name = str(var)
-            val = vars[name]
-            if not self.isFloat(str(val)):
-                if throwError:
-                    self.throwTellUserDilog("Null Variables Found", f"The following variable has no value: {name}")
-                return None, None, None
-
-            subsVarsY[name] = val
-
-        # subsitudes values in for vars
-        x = self.xAxisEquiation.subs(subsVarsX)
-        y = self.yAxisEquiation.subs(subsVarsY)
-        try:
-            return True, float(x), float(y)
-        except:
-            return False, x, y
+        except Exception as e:
+            self.throwTellUserDilog("Plot Update Error", str(e))
 
     def getVarsDict(self, data):
         """
@@ -1485,7 +1460,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             return x, y
         return [], []
 
-    ################################################# End - Calculation Helper Methods ##############################################
+################################################# End - Calculation Helper Methods ##############################################
 #################################################################################################################################
 
 #################################################################################################################################
