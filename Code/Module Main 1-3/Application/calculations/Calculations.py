@@ -222,13 +222,16 @@ class Calculations:
         :param yData:
         :return r2:
         """
-        x = np.array(xData, dtype=float)
-        y = np.array(yData, dtype=float)
-        slope, intercept = Calculations.getLineOfBestFit(xData, yData)
-        yPred = slope * x + intercept
+        try:
+            x = np.array(xData, dtype=float)
+            y = np.array(yData, dtype=float)
+            slope, intercept = Calculations.getLineOfBestFit(xData, yData)
+            yPred = slope * x + intercept
 
-        ssRes = np.sum((y - yPred) ** 2)
-        ssTot = np.sum((y - np.mean(y)) ** 2)
+            ssRes = np.sum((y - yPred) ** 2)
+            ssTot = np.sum((y - np.mean(y)) ** 2)
 
-        r2 = 1 - (ssRes / ssTot)
-        return r2
+            r2 = 1 - (ssRes / ssTot)
+            return r2
+        except:
+            return "null"
