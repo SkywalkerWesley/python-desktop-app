@@ -1,7 +1,6 @@
 ﻿from PyQt5 import QtCore
 import numpy as np
 from sympy import lambdify
-from sympy.physics.units import yards
 
 
 class SamplePlotCalcWorker(QtCore.QObject):
@@ -12,13 +11,14 @@ class SamplePlotCalcWorker(QtCore.QObject):
 
     resultReady = QtCore.pyqtSignal(dict)
 
-    def __init__(self, data, xexp, yexp, lineOfBestFit, getVars):
+    def __init__(self, data, xexp, yexp, lineOfBestFit, getVars, temp):
         super().__init__()
         self.data = data
         self.xexp = xexp
         self.yexp = yexp
         self.lineOfBestFit = lineOfBestFit
         self.getVars = getVars
+        self.temp = temp
 
         self.xsymbols = sorted(list(xexp.free_symbols), key=lambda s: s.name)
         self.ysymbols = sorted(list(yexp.free_symbols), key=lambda s: s.name)
@@ -128,6 +128,7 @@ class SamplePlotCalcWorker(QtCore.QObject):
                 d1_m44 = np.gradient(m44, times, edge_order=2)
                 d2_m44 = np.gradient(d1_m44, times, edge_order=2)
 
+            delta = self.calculateDeltaVal()
             self.resultReady.emit({
                 "equationX": equationX,
                 "equationY": equationY,
@@ -137,8 +138,17 @@ class SamplePlotCalcWorker(QtCore.QObject):
                 "lbfY": lbfY,
                 "times": times if times.size > 0 else None,
                 "d2_m44": d2_m44,
+                "delta": delta
             })
         except Exception as e:
             self.error.emit(str(e))
         finally:
             self.finished.emit()
+
+    def calculateDeltaVal(self):
+        try:
+            temp = float(self.temp)
+        except:
+            return None
+        print(temp)
+        return temp * 100

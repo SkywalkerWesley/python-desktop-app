@@ -849,10 +849,23 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.customPlotGraphLayout.addWidget(self.calculationPlotGraph2)
 
-        ################################## Add Data Buttons #####################################################
+        ################################## bottomBarLayout #####################################################
         self.calculationPlotAddDataButton = Button("Add Data", 120, 26)
-        self.calculationPlotButtonLayout = QtWidgets.QGridLayout()
-        self.calculationPlotButtonLayout.addWidget(self.calculationPlotAddDataButton, 1, 1)
+        tempLable = QtWidgets.QLabel("Sample temperature:")
+
+        self.samplePlotTemperatureLineEdit = LineEdit()
+        self.samplePlotTemperatureLineEdit.setReadOnly(False)
+
+        deltaLable = QtWidgets.QLabel("Delta:")
+        self.samplePlotDeltaLineEdit = LineEdit()
+
+        bottomBarLayout = QtWidgets.QGridLayout()
+        bottomBarLayout.addWidget(self.calculationPlotAddDataButton, 1, 1)
+        bottomBarLayout.addWidget(tempLable, 1, 2)
+        bottomBarLayout.addWidget(self.samplePlotTemperatureLineEdit, 1, 3)
+        bottomBarLayout.addWidget(deltaLable, 1, 4)
+        bottomBarLayout.addWidget(self.samplePlotDeltaLineEdit, 1,5)
+
 
         ################################## Table Sample Name #####################################################
         sampleNameLamble = QtWidgets.QLabel("Sample Name:")
@@ -886,7 +899,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.calculationPlotButtonLayoutAxisGraph = QtWidgets.QGridLayout()
         self.calculationPlotButtonLayoutAxisGraph.addLayout(self.topBarGridLayout, 1, 1)
         self.calculationPlotButtonLayoutAxisGraph.addLayout(self.customPlotGraphLayout, 2, 1)
-        self.calculationPlotButtonLayoutAxisGraph.addLayout(self.calculationPlotButtonLayout, 3, 1)
+        self.calculationPlotButtonLayoutAxisGraph.addLayout(bottomBarLayout, 3, 1)
 
         # Table
         tableHalfLayout = QtWidgets.QGridLayout()
@@ -1227,7 +1240,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
             yexp=yexp,
             lineOfBestFit=self.xyGraphLineOfBestFit,
             getVars=self.getVarsDict,
-
+            temp=self.samplePlotTemperatureLineEdit.text(),
         )
 
         self._calcWorker.moveToThread(self._calcThread)
@@ -1297,6 +1310,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.sampleEquationXPlotData = res["sampleX"]
             self.sampleEquationYPlotData = res["sampleY"]
 
+            # Delta Function
+            if res["delta"] is not None:
+                self.samplePlotDeltaLineEdit.setText(str(res["delta"]))
+            else:
+                self.samplePlotDeltaLineEdit.setText("undef")
+
         except Exception as e:
             self.throwTellUserDilog("Plot Update Error", str(e))
 
@@ -1359,20 +1378,22 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # if file type is not null
         if ok:
+            # catch export errors, gernal file write error ei file is open
+            try:
+                with open(path, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
 
-            with open(path, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
-
-                for d in self.samplePlotData:
-                    columnHeaders = [d[0]]
-                    dataLists = [[]]
-                    for i in range(1, len(d)):
-                        columnHeaders.append(d[i][0])
-                        dataLists.append(d[i][1])
-                    writer.writerow(list(columnHeaders))
-                    for row in zip_longest(*dataLists, fillvalue=''):
-                        writer.writerow(list(row))
-
+                    for d in self.samplePlotData:
+                        columnHeaders = [d[0]]
+                        dataLists = [[]]
+                        for i in range(1, len(d)):
+                            columnHeaders.append(d[i][0])
+                            dataLists.append(d[i][1])
+                        writer.writerow(list(columnHeaders))
+                        for row in zip_longest(*dataLists, fillvalue=''):
+                            writer.writerow(list(row))
+            except Exception as e:
+                self.throwTellUserDilog("Export Error", str(e))
     def addSampleToSampleData(self):
         """
         Adds sample data to sample table
