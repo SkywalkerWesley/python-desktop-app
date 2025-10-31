@@ -2,6 +2,8 @@
 import numpy as np
 from sympy import lambdify
 
+from Calculations import Calculations
+
 
 class SamplePlotCalcWorker(QtCore.QObject):
     # Singles for the main module
@@ -129,6 +131,8 @@ class SamplePlotCalcWorker(QtCore.QObject):
                 d2_m44 = np.gradient(d1_m44, times, edge_order=2)
 
             delta = self.calculateDeltaVal()
+
+            rSquared = Calculations.rSquared(sampleX, sampleY)
             self.resultReady.emit({
                 "equationX": equationX,
                 "equationY": equationY,
@@ -138,7 +142,8 @@ class SamplePlotCalcWorker(QtCore.QObject):
                 "lbfY": lbfY,
                 "times": times if times.size > 0 else None,
                 "d2_m44": d2_m44,
-                "delta": delta
+                "delta": delta,
+                "rSquared": rSquared
             })
         except Exception as e:
             self.error.emit(str(e))

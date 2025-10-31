@@ -1218,6 +1218,10 @@ class LabViewModule1(QtWidgets.QMainWindow):
         Starts an new thread that updates calculation plots
         :return:
         """
+        # Only works if calculations tab is open
+        if equal(self.tabWidget.currentWidget(), self.calculatedPlotsFrame):
+            return
+
         # guard against multiple concurrent threads
         t = getattr(self, "_calcThread", None)
         if t is not None:
@@ -1285,9 +1289,17 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 res["equationX"], res["equationY"],
                 pen=None, symbol='o', symbolBrush='r'
             )
+            try:
+                rSquared = round(res["rSquared"], 5)
+            except:
+                rSquared = "N/A"
+            text = pg.TextItem(f"R²={rSquared}", color=(100, 255, 100),  anchor=(1, 0))
 
             self.autoRangeToData(res["equationX"], res["equationY"], self.calculationPlotGraph, 0.1)
-
+            view = self.calculationPlotGraph.getViewBox()
+            x_range, y_range = view.viewRange()
+            text.setPos(x_range[1], y_range[1])
+            self.calculationPlotGraph.addItem(text)
             # Time vs d²/dt²(Mass44)
             if hasattr(self, "calculationPlotGraph2") and res.get("times") is not None and res.get(
                     "d2_m44") is not None:
@@ -1378,7 +1390,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         # if file type is not null
         if ok:
-            # catch export errors, gernal file write error ei file is open
+            # catch export errors, gernal file write error ei file is open somewhere else
             try:
                 with open(path, 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile, dialect='excel', lineterminator='\n')
@@ -1394,6 +1406,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
                             writer.writerow(list(row))
             except Exception as e:
                 self.throwTellUserDilog("Export Error", str(e))
+
     def addSampleToSampleData(self):
         """
         Adds sample data to sample table
