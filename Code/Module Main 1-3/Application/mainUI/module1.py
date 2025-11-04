@@ -152,8 +152,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.folder_path = ''
 
         # Custom Plot axises
-        self.xAxisEquiation = sympify("ln(Mass44 - CO2Zero44)")
-        self.yAxisEquiation = sympify("ln(Mass45 - CO2Zero45)")
+        self.DefaultXAxisEquiation = "ln(Mass44 - CO2Zero44)"
+        self.DefaultYAxisEquiation = "ln(Mass45 - CO2Zero45)"
+
+        self.xAxisEquiation = sympify(self.DefaultXAxisEquiation)
+        self.yAxisEquiation = sympify(self.DefaultYAxisEquiation)
         self.sampleEquationXPlotData = []
         self.sampleEquationYPlotData = []
         # List for holding custom plot data
@@ -194,9 +197,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         self.show()
 
-
-
-        
 #################################################################################################################################
 ################################################# User Interface Creation #################################################
     """
@@ -819,8 +819,11 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.xAxisLineEdit.setReadOnly(False)
         self.yAxisLineEdit.setReadOnly(False)
 
-        self.xAxisLineEdit.setText(str(self.xAxisEquiation))
-        self.yAxisLineEdit.setText(str(self.yAxisEquiation))
+        self.xAxisLineEdit.setText(str(self.DefaultXAxisEquiation))
+        self.yAxisLineEdit.setText(str(self.DefaultYAxisEquiation))
+
+        self.OnEditedXAxis()
+        self.OnEditedYAxis()
 
         self.lineEditList.extend([self.xAxisLineEdit, self.yAxisLineEdit])
 
@@ -1319,12 +1322,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
             elif hasattr(self, "calculationPlotGraph2"):
                 self.calculationPlotGraph2Curve.setData([], [])
 
-            self.sampleEquationXPlotData = res["sampleX"]
-            self.sampleEquationYPlotData = res["sampleY"]
+            self.sampleEquationXPlotData = Calculations.roundIfFloat(res["sampleX"], 5)
+            self.sampleEquationYPlotData = Calculations.roundIfFloat(res["sampleY"], 5)
 
             # Delta Function
             if res["delta"] is not None:
-                self.samplePlotDeltaLineEdit.setText(str(res["delta"]))
+                self.samplePlotDeltaLineEdit.setText(Calculations.roundIfFloat(str(res["delta"]), 5))
             else:
                 self.samplePlotDeltaLineEdit.setText("undef")
 
@@ -1442,7 +1445,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         for d in data:
             vars = self.getVarsDict(d)
             for v in allVars:
-                rawData[v].append(vars[str(v)])
+                rawData[v].append(Calculations.roundIfFloat(vars[str(v)], 5))
 
         for k in rawData.keys():
             sampleData.append((k, rawData[k]))
@@ -1456,7 +1459,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         #################### Adds line of best fit ####################
         slope, intecept = Calculations.getLineOfBestFit(equationXData, equatoinYData)
-        sampleData.append(("Line Of Best Fit", ["" + str(slope) +"*x"+ " + " + str(intecept)]))
+        sampleData.append(("Line Of Best Fit", ["" + Calculations.roundIfFloat(str(slope), 5) +"*x"+ " + " + Calculations.roundIfFloat(str(intecept), 5)]))
 
         #################### Adds R^2 ####################
         r2 = Calculations.rSquared(equationXData, equatoinYData)
@@ -1506,8 +1509,8 @@ class LabViewModule1(QtWidgets.QMainWindow):
         slope44, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
         slope45, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
 
-        self.blankSlope44LineEdit.setText(str(slope44))
-        self.blankSlope45LineEdit.setText(str(slope45))
+        self.blankSlope44LineEdit.setText(Calculations.roundIfFloat(str(slope44), 5))
+        self.blankSlope45LineEdit.setText(Calculations.roundIfFloat(str(slope45), 5))
 
     def extractSlopeButtonPressed(self):
         data = self.getAllMeanBarData()
@@ -1515,8 +1518,9 @@ class LabViewModule1(QtWidgets.QMainWindow):
         slope44, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][3] for t in data])
         slope45, _ = Calculations.getLineOfBestFit([t[0] for t in data], [t[1][4] for t in data])
 
-        self.extractSlope44LineEdit.setText(str(slope44))
-        self.extractSlope45LineEdit.setText(str(slope45))
+        self.extractSlope44LineEdit.setText(Calculations.roundIfFloat(str(slope44), 5))
+        self.extractSlope45LineEdit.setText(Calculations.roundIfFloat(str(slope45), 5))
+
     def stopButtonPressed(self):
         self.throwStopButtonWarning()
 
@@ -2324,7 +2328,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         try:
             equationString = self.xAxisLineEdit.text()
             equation = sympify(equationString)
-            self.xAxisLineEdit.setText(str(equation))
+            # self.xAxisLineEdit.setText(str(equation))
             self.xAxisEquiation = equation
         except:
             self.throwTellUserDilog("Invalid Equation", f"{self.xAxisLineEdit.text()} is not a valid equation")
@@ -2333,7 +2337,7 @@ class LabViewModule1(QtWidgets.QMainWindow):
         try:
             equationString = self.yAxisLineEdit.text()
             equation = sympify(equationString)
-            self.yAxisLineEdit.setText(str(equation))
+            # self.yAxisLineEdit.setText(str(equation))
             self.yAxisEquiation = equation
         except:
             self.throwTellUserDilog("Invalid Equation", f"{self.yAxisLineEdit.text()} is not a valid equation")

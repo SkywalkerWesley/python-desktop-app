@@ -215,6 +215,20 @@ class Calculations:
             return None, None
 
     @staticmethod
+    def roundIfFloat(data, sf):
+        """
+        Rounds data to sf sigfigs if possible. But if not, returns data as is.
+        :param data:
+        :param sigFigs:
+        :return:
+        """
+        t = type(data)
+        try:
+            return t(round(float(data), sf))
+        except:
+            return data
+
+    @staticmethod
     def rSquared(xData, yData):
         """
         r^2 of x and y data
