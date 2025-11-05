@@ -54,7 +54,7 @@ class PlotAllThread(QObject):
                 self.filesParsedSignal.emit()
 
             dataPoints = []
-            dataPoint = self.globalObject.dataObj.__next__()
+            dataPoint = self.globalObject.dataObj.aa
 
             if not dataPoint:
 
