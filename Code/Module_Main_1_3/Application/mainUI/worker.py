@@ -13,10 +13,10 @@ import PyQt5.QtCore as QtCore
 from time import time
 import sys
 
-sys.path.insert(0, '../read-data')
+sys.path.insert(0, '../read_data')
 
-from sharedSingleton import SharedSingleton
-from dataUtility import DataUtility
+from Code.Module_Main_1_3.Application.read_data.sharedSingleton import  SharedSingleton
+from Code.Module_Main_1_3.Application.read_data.dataUtility import DataUtility
 
 class Worker(QObject):
 

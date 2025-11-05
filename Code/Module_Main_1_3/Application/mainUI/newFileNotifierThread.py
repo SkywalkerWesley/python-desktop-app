@@ -18,9 +18,9 @@ from PyQt5.QtCore import QObject
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-sys.path.insert(0, '../read-data')
+sys.path.insert(0, '../read_data')
 
-from sharedSingleton import SharedSingleton
+from Code.Module_Main_1_3.Application.read_data.sharedSingleton import SharedSingleton
 
 class NewFileNotifierThread(QObject):
 

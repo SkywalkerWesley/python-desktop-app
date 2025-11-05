@@ -39,13 +39,13 @@ from plotAllThread import PlotAllThread
 
 #####################################################################
 
-# adding read-data to the system path
+# adding read_data to the system path
 sys.path.append('../read-data')
 
 # adding uiElements to the system path
 sys.path.append('../uiElements')
 
-# adding read-data to the system path
+# adding read_data to the system path
 sys.path.append('../calculations')
 
 from getData import GetData

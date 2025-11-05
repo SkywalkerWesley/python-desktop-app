@@ -2,8 +2,7 @@
 import numpy as np
 from sympy import lambdify
 
-from Calculations import Calculations
-
+from Code.Module_Main_1_3.Application.calculations.Calculations import Calculations
 
 class SamplePlotCalcWorker(QtCore.QObject):
     # Singles for the main module

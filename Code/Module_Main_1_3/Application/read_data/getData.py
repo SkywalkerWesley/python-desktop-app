@@ -9,9 +9,9 @@ __status__ = "Completed"
 """
 
 import pandas as pd
-from  file import File
-from dataUtility import DataUtility
-from sharedSingleton import SharedSingleton
+from Code.Module_Main_1_3.Application.read_data.file import File
+from Code.Module_Main_1_3.Application.read_data.dataUtility import DataUtility
+from Code.Module_Main_1_3.Application.read_data.sharedSingleton import SharedSingleton
 
 class GetData:
 

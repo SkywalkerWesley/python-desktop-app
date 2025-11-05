@@ -47,26 +47,26 @@ from plotAllThread import PlotAllThread
 
 #####################################################################
 
-# adding read-data to the system path
-sys.path.append('../read-data')
+# adding read_data to the system path
+sys.path.append('../read_data')
 
 # adding uiElements to the system path
 sys.path.append('../uiElements')
 
-# adding read-data to the system path
+# adding read_data to the system path
 sys.path.append('../calculations')
 
-from getData import GetData
-from sharedSingleton import SharedSingleton
-from curve import Curve
-from graph import Graph
-from frame import Frame
-from Calculations import Calculations
-from button import Button
-from dialog import Dialog
-from LineEdit import LineEdit
-from dataUtility import DataUtility
-from readEZView import read_from_ezview
+from Code.Module_Main_1_3.Application.read_data.getData import GetData
+from Code.Module_Main_1_3.Application.read_data.sharedSingleton import SharedSingleton
+from Code.Module_Main_1_3.Application.uiElements.curve import Curve
+from Code.Module_Main_1_3.Application.uiElements.graph import Graph
+from Code.Module_Main_1_3.Application.uiElements.frame import Frame
+from Code.Module_Main_1_3.Application.calculations.Calculations import Calculations
+from Code.Module_Main_1_3.Application.uiElements.button import Button
+from Code.Module_Main_1_3.Application.uiElements.dialog import Dialog
+from Code.Module_Main_1_3.Application.uiElements.LineEdit import LineEdit
+from Code.Module_Main_1_3.Application.read_data.dataUtility import DataUtility
+from Code.Module_Main_1_3.Application.read_data.readEZView import read_from_ezview
 
 
 class LabViewModule1(QtWidgets.QMainWindow):

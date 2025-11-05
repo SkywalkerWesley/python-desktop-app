@@ -17,11 +17,11 @@ import time
 import numpy as np
 
 # adding UI to the system path
-sys.path.insert(0, '../read-data')
+sys.path.insert(0, '../read_data')
 
-from sharedSingleton import SharedSingleton
+from Code.Module_Main_1_3.Application.read_data.sharedSingleton import SharedSingleton
 
-class CurveModule3:
+class Curve:
 
     def __init__(self, name, y, pen, graph):
         self.name = name
@@ -30,7 +30,7 @@ class CurveModule3:
         self.y = y
         self.pen = pen
         self.points = SharedSingleton()
-        self.x = list(self.points.da49data.keys())
+        self.x = list(self.points.dataPoints.keys())
         self.graph = graph
         self.isChecked = False
         self.firstPoint = False
@@ -46,7 +46,7 @@ class CurveModule3:
     def updateDataPoints(self, x, y):
 
         self.y += y
-        self.x = list(self.points.da49data.keys())
+        self.x = list(self.points.dataPoints.keys())
 
         if self.isChecked == True:
 
@@ -75,11 +75,7 @@ class CurveModule3:
 
         self.y = []
         self.x = []
-        self.isChecked = False
-        self.firstPoint = False
-        if hasattr(self, 'data_line'):
-            self.data_line.clear()
-            self.data_line.setData(x=[], y=[])
+        self.data_line.clear()
         
 
 
