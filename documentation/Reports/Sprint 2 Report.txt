@@ -1,5 +1,5 @@
 # Sprint 2 Report 11/5/2025
-## YouTube link of Sprint 1 Video: https://youtu.be/6bhzIRqpdnA
+## YouTube link of Sprint 2 Video: https://youtu.be/6bhzIRqpdnA
 
 ## What's New (User Facing)
 * More graphs plotting data critical to the experiment.
@@ -34,4 +34,5 @@ Here's what we'd like to improve:
 As the semester comes to a close we'd like to learn more about what comes next after we complete what is needed for the experiment.
 
 Here are changes we plan to implement in the next sprint:
+
 Wrapping up the final calculations for the experiment (Rubisco)
