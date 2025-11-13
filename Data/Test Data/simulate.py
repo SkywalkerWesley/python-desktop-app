@@ -20,7 +20,7 @@ for filename in os.listdir(destination_folder):
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-for c in range(1,1000):
+for c in range(1,10000):
     filename = f"{c}.csv"
     src_path = os.path.join(source_folder, filename)
     dest_path = os.path.join(destination_folder, filename)
@@ -36,7 +36,7 @@ for c in range(1,1000):
         continue
 
     # Wait 1 second before copying the next file
-    time.sleep(1)
+    time.sleep(0.1)
 
 
 
