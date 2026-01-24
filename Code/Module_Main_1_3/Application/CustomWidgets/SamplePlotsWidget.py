@@ -3,7 +3,7 @@ import traceback
 
 import numpy as np
 import pyqtgraph
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 import pyqtgraph as pg
 from openpyxl.styles.builtins import calculation
 from sympy import sympify
@@ -75,13 +75,13 @@ class SamplePlotsWidget(QtWidgets.QWidget):
         self.topBarGridLayout.addRow(self.yAxisLabel, self.yAxisLineEdit)
 
         ################################## Graph #####################################################
-        self.calculationPlotGraph = pyqtgraph.PlotWidget()
+        self.calculationPlotGraph = Graph(100, 100)
 
         self.samplePlotGraphLayout = QtWidgets.QHBoxLayout()
         self.samplePlotGraphLayout.addWidget(self.calculationPlotGraph)
         self.setContentsMargins(0, 10, 0, 0)
 
-        self.calculationPlotGraph2 = pyqtgraph.PlotWidget() # Graph(100, 100)
+        self.calculationPlotGraph2 = Graph(100, 100)
         self.calculationPlotGraph2.setLabel(axis='bottom', text='Time')
         self.calculationPlotGraph2.setLabel(axis='left', text='d²/dt² Mass44')
 
@@ -163,9 +163,7 @@ class SamplePlotsWidget(QtWidgets.QWidget):
         # adds export table buttons
         self.calculationPlotExportTableButton.clicked.connect(lambda: self.exportSampleTable())
         self.calculationPlotClearTableButton.clicked.connect(self.clearSampleData)
-        self.testCurve = pg.PlotDataItem(skipFiniteCheck=True, clipToView=True)
 
-        self.calculationPlotGraph.addItem(self.testCurve)
 
 
     def addSampleToSampleData(self):
@@ -272,6 +270,7 @@ class SamplePlotsWidget(QtWidgets.QWidget):
                     return
             except RuntimeError:
                 self._calcThread = None
+        self.calculationPlotGraph.setBackground(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
 
         # Snapshot equations on the main thread
         xexp = self.xAxisEquiation
@@ -290,7 +289,7 @@ class SamplePlotsWidget(QtWidgets.QWidget):
         self._calcThread.started.connect(self._calcWorker.run)
 
         # update plots on the thread
-        self._calcWorker.resultReady.connect(self.applyCustomCalcResults, QtCore.Qt.QueuedConnection)
+        self._calcWorker.resultReady.connect(self.applyCustomCalcResults)
 
         # Clean up
         self._calcWorker.finished.connect(self._calcThread.quit)
@@ -318,6 +317,8 @@ class SamplePlotsWidget(QtWidgets.QWidget):
         :param res:
         :return:
         """
+        self.calculationPlotGraph.setBackground(QtGui.QBrush(QtGui.QColor(0, 0, 255)))
+
         try:
             self.calculationPlotGraph.clear()
 
@@ -331,57 +332,62 @@ class SamplePlotsWidget(QtWidgets.QWidget):
                 res["sampleEquationPlotX"], res["sampleEquationPlotY"],
                 pen=None, symbol='o', symbolBrush='r'
             )
+            self.calculationPlotGraph.plot()
 
-            # r^2 and delta graph labels
-            try:
-                rSquared = round(res["rSquared"], 5)
-            except:
-                rSquared = "N/A"
-            try:
-                delta = round(res["delta_rubisco"], 5)
-            except:
-                delta = "N/A"
-            try:
-                blank44OverBestFit = round(float(self.blankSlope44LineEdit.text()) / float(res["slope44"]), 5)
-            except:
-                blank44OverBestFit = "N/A"
+            # # r^2 and delta graph labels
+            # try:
+            #     rSquared = round(res["rSquared"], 5)
+            # except:
+            #     rSquared = "N/A"
+            # try:
+            #     delta = round(res["delta_rubisco"], 5)
+            # except:
+            #     delta = "N/A"
+            # try:
+            #     blank44OverBestFit = round(float(self.blankSlope44LineEdit.text()) / float(res["slope44"]), 5)
+            # except:
+            #     blank44OverBestFit = "N/A"
+            #
+            # text = pg.TextItem(f"R²={rSquared}\nDelta={delta}\nb44/slope={blank44OverBestFit}", color=(100, 255, 100), anchor=(1, 0))
+            # # self.autoRangeToData(res["sampleEquationPlotX"], res["sampleEquationPlotY"], self.calculationPlotGraph, 0.1)
+            # view = self.calculationPlotGraph.getViewBox()
+            # x_range, y_range = view.viewRange()
+            #
+            # text.setPos(x_range[1], y_range[1])
+            # self.calculationPlotGraph.addItem(text)
+            # self.calculationPlotGraph.setBackground('white')
+            #
+            # # Time vs d²/dt²(Mass44)
+            # times = res["d2_Time"]
+            # d2 = res["d2_m44"]
+            # self.calculationPlotGraph2Curve.setData(x=times, y=d2)
+            #
+            # # Rescale view
+            # self.calculationPlotGraph2.setXRange(float(times[0]), float(times[-1]))
+            # y_min, y_max = float(np.min(d2)), float(np.max(d2))
+            # if y_min == y_max:
+            #     pad = 1.0 if y_min == 0 else abs(y_min) * 0.1
+            #     y_min -= pad
+            #     y_max += pad
+            # self.calculationPlotGraph2.setYRange(min(-1, y_min), max(1, y_max))
+            #
+            #
+            # try:
+            #     deltaPart = float(self.samplePlotDeltaPartLineEdit.text())
+            # except:
+            #     deltaPart = None
 
-            text = pg.TextItem(f"R²={rSquared}\nDelta={delta}\nb44/slope={blank44OverBestFit}", color=(100, 255, 100), anchor=(1, 0))
-            # self.autoRangeToData(res["sampleEquationPlotX"], res["sampleEquationPlotY"], self.calculationPlotGraph, 0.1)
-            view = self.calculationPlotGraph.getViewBox()
-            x_range, y_range = view.viewRange()
-            text.setPos(x_range[1], y_range[1])
-            self.calculationPlotGraph.addItem(text)
-            self.calculationPlotGraph.setBackground('white')
-            # Time vs d²/dt²(Mass44)
-            times = res["d2_Time"]
-            d2 = res["d2_m44"]
-            self.calculationPlotGraph2Curve.setData(x=times, y=d2)
+            # self.currentPlotData = {
+            #     "sampleEquationXPlotData": Calculations.roundIfFloat(res["sampleX"], 5),
+            #     "sampleEquationYPlotData": Calculations.roundIfFloat(res["sampleY"], 5),
+            #     "rSquared": rSquared,
+            #     "delta": delta,
+            #     "α_total (slope)": res["α_total (slope)"],
+            #     "delta_rubisco": res["delta_rubisco"],
+            #     "delta_part": deltaPart,
+            #     "b44OverSlope": blank44OverBestFit,
+            # }
 
-            # Rescale view
-            self.calculationPlotGraph2.setXRange(float(times[0]), float(times[-1]))
-            y_min, y_max = float(np.min(d2)), float(np.max(d2))
-            if y_min == y_max:
-                pad = 1.0 if y_min == 0 else abs(y_min) * 0.1
-                y_min -= pad
-                y_max += pad
-            self.calculationPlotGraph2.setYRange(min(-1, y_min), max(1, y_max))
-
-
-            try:
-                deltaPart = float(self.samplePlotDeltaPartLineEdit.text())
-            except:
-                deltaPart = None
-            self.currentPlotData = {
-                "sampleEquationXPlotData": Calculations.roundIfFloat(res["sampleX"], 5),
-                "sampleEquationYPlotData": Calculations.roundIfFloat(res["sampleY"], 5),
-                "rSquared": rSquared,
-                "delta": delta,
-                "α_total (slope)": res["α_total (slope)"],
-                "delta_rubisco": res["delta_rubisco"],
-                "delta_part": deltaPart,
-                "b44OverSlope": blank44OverBestFit,
-            }
         except Exception as e:
             self.softError.emit("Plot Update Error", str(e))
 

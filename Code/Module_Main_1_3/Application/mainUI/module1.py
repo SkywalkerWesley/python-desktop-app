@@ -984,7 +984,12 @@ class LabViewModule1(QtWidgets.QMainWindow):
 
         ################################## Custom Plot Calc ##################################
         # Update Calculation Plots from mean bar moved
-        self.meanBar.sigRegionChangeFinished.connect(lambda: self.SamplePlotsWidget.updateCustomCalcPlots(self.getAllMeanBarData()))
+        self.meanBar.sigRegionChangeFinished.connect(self.temp)
+
+    def temp(self):
+        if np.equal(self.tabWidget.currentWidget(), self.SamplePlotsWidget):
+            self.SamplePlotsWidget.updateCustomCalcPlots(self.getAllMeanBarData())
+            print("ran")
 
     def select_ezview(self):
         # Open a file dialog to select a folder
@@ -1159,7 +1164,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.throwStopButtonWarning()
 
     def barsButtonPressed(self):
-
         xRange = self.realTimeGraph.getXAxisRange()
         scale = xRange[1] - xRange[0]
         midPoint = (xRange[1] + xRange[0]) / 2
@@ -1167,7 +1171,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
         self.meanBar.setRegion([midPoint-scale, midPoint+scale])
 
     def rescaleButtonPressed(self):
-
         if self.realTimeGraph.graphInteraction == False:
             return
         elif self.realTimeGraph.graphInteraction == True:
@@ -1175,7 +1178,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
             self.realTimeGraph.graphInteraction = False
 
     def plotAllButtonPressed(self):
-
         # cant plot all well started
         if self.application_state == "Running":
             return
@@ -2088,7 +2090,6 @@ class LabViewModule1(QtWidgets.QMainWindow):
                 self.realTimeGraph.setNewXRange(self.currentXRange[0], self.currentXRange[1])
 
         # Changing Y Axes Scale:
-
         if self.isYChnaged:
             if not self.realTimeGraph.graphInteraction:
                 offsetMin = (20*self.yAllMin)/100
