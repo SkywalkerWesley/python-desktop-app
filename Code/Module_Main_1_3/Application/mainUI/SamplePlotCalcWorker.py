@@ -1,8 +1,6 @@
 ﻿from PyQt5 import QtCore
 import numpy as np
 from sympy import lambdify
-import math
-import random
 
 from Code.Module_Main_1_3.Application.calculations.Calculations import Calculations
 
@@ -14,14 +12,12 @@ class SamplePlotCalcWorker(QtCore.QObject):
 
     resultReady = QtCore.pyqtSignal(dict)
 
-    def __init__(self, data, xexp, yexp, lineOfBestFit, getVars, temp, deltaPart):
+    def __init__(self, data, xexp, yexp, getVars, deltaPart):
         super().__init__()
         self.data = data
         self.xexp = xexp
         self.yexp = yexp
-        self.lineOfBestFit = lineOfBestFit
         self.getVars = getVars
-        self.temp = temp
         self.deltaPart = deltaPart
 
         self.xsymbols = sorted(list(xexp.free_symbols), key=lambda s: s.name)
@@ -57,35 +53,9 @@ class SamplePlotCalcWorker(QtCore.QObject):
             return False, f"Some variables have no value: {bad}"
         return True, args
 
-    def savgol_coeffs(self, window_length, polyorder, deriv=0, delta=1.0):
-        half = window_length // 2
-        # positions: -half .. +half
-        x = np.arange(-half, half + 1)
-        A = np.vstack([x ** i for i in range(polyorder + 1)]).T
-
-        # Compute the pseudo-inverse
-        ATA_inv = np.linalg.pinv(A)
-
-        # derivative row
-        coeffs = ATA_inv[deriv] * math.factorial(deriv) / (delta ** deriv)
-
-        return coeffs
-
-    def savgol_filter_np(self, y, window_length, polyorder, mode='interp'):
-        coeffs = self.savgol_coeffs(window_length, polyorder, deriv=0)
-        half = window_length // 2
-
-        # pad
-        if mode == 'interp':
-            # mirror padding (closest to SciPy’s 'interp')
-            ypad = np.pad(y, (half, half), mode='reflect')
-        else:
-            raise ValueError("only mode='interp' implemented")
-
-        return np.convolve(ypad, coeffs[::-1], mode='valid')
-
     @QtCore.pyqtSlot()
     def run(self):
+        """runs calculations for Sample Plot"""
         try:
             # sampleEquationPlot is the data that get put on the graph
             sampleEquationPlotX = []
@@ -142,7 +112,7 @@ class SamplePlotCalcWorker(QtCore.QObject):
                         warnedOnce = True
 
             # Line of best fit
-            lbfX, lbfY = self.lineOfBestFit(sampleEquationPlotX, sampleEquationPlotY)
+            lbfX, lbfY = Calculations.xyGraphLineOfBestFit(sampleEquationPlotX, sampleEquationPlotY)
 
             # time vs d²/dt²(Mass44)
             times = []
@@ -169,11 +139,10 @@ class SamplePlotCalcWorker(QtCore.QObject):
                 if window % 2 == 0:
                     window -= 1
 
-
-                m44_smooth = self.savgol_filter_np(m44, window, 3)
+                m44_smooth = Calculations.savgol_filter_np(m44, window, 3)
 
                 d1 = np.gradient(m44_smooth, times, edge_order=2)
-                d2_m44 = np.gradient(m44_smooth, times, edge_order=2)
+                d2_m44 = np.gradient(d1, times, edge_order=2)
 
             slope, intercept = Calculations.getLineOfBestFit(sampleEquationPlotX, sampleEquationPlotY)
             slope44, _ = Calculations.getLineOfBestFit([t[0] for t in self.data], [t[1][3] for t in self.data])

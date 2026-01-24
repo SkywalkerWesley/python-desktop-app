@@ -6,7 +6,7 @@ __maintainer__ = ""
 __email__ = ["agarwal.ritik1101@gmail.com", "zoeparker@comcast.net"]
 __status__ = "Completed"
 """
-
+import math
 from statistics import mean
 import numpy as np
 
@@ -253,3 +253,51 @@ class Calculations:
             return r2
         except:
             return "null"
+
+    @staticmethod
+    def savgol_coeffs(window_length, polyorder, deriv=0, delta=1.0):
+        """Helper function for savgol_filter_np"""
+        half = window_length // 2
+        # positions: -half .. +half
+        x = np.arange(-half, half + 1)
+        A = np.vstack([x ** i for i in range(polyorder + 1)]).T
+
+        # Compute the pseudo-inverse
+        ATA_inv = np.linalg.pinv(A)
+
+        # derivative row
+        coeffs = ATA_inv[deriv] * math.factorial(deriv) / (delta ** deriv)
+
+        return coeffs
+
+    @staticmethod
+    def savgol_filter_np(y, window_length, polyorder, mode='interp'):
+        """A smoover function"""
+        coeffs = Calculations.savgol_coeffs(window_length, polyorder, deriv=0)
+        half = window_length // 2
+
+        # pad
+        if mode == 'interp':
+            # mirror padding (closest to SciPy’s 'interp')
+            ypad = np.pad(y, (half, half), mode='reflect')
+        else:
+            raise ValueError("only mode='interp' implemented")
+
+        return np.convolve(ypad, coeffs[::-1], mode='valid')
+
+    @staticmethod
+    def xyGraphLineOfBestFit(xData, yData):
+        """
+        Return the endpoints of line of best fit for given data
+        :param xData:
+        :param yData:
+        :return:
+        """
+        slope, intercept = Calculations.getLineOfBestFit(xData, yData)
+
+        if slope and intercept:
+            xMin, xMax = min(xData), max(xData)
+            x = [xMin, xMax]
+            y = [slope * xMin + intercept, slope * xMax + intercept]
+            return x, y
+        return [], []
