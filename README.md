@@ -3,6 +3,7 @@
 ## Project summary
 
 Each module in this project is a Python program that aids in the use of Mass Spectrometers and other instruments used for analyzing plant respiration in the WSU Cousins Plant Biology Lab.
+Currently being worked on spring semester 2026 for CPT_S-421. 
 
 ### Additional information about the project
 
