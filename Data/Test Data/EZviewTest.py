@@ -1,7 +1,7 @@
 ﻿import time
 import os
 
-SOURCE_FILE = "Data/Test Data/EZView Data - 01_30_2026_10_42_25.txt"
+SOURCE_FILE = "Data/Test Data/EZView DataGood.txt"
 DEST_FILE = "Data/Test Data/EZView DataCopy.txt"
 
 # Delete destination file if it exists
@@ -21,4 +21,4 @@ with open(SOURCE_FILE, "r") as src, open(DEST_FILE, "a") as dest:
             print("Copied line:", line.strip())
         else:
             # No new line, wait 1 second
-            time.sleep(0.1)
+            time.sleep(0.5)
