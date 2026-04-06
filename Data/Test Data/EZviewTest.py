@@ -2,8 +2,8 @@
 import time
 import os
 
-SOURCE_FILE = "Data/Test Data/EZView DataGood.txt"
-DEST_FILE = "Data/Test Data/EZView DataCopy.txt"
+SOURCE_FILE = "Data/Test Data/EZView_DataGood.txt"
+DEST_FILE = "Data/Test Data/EZView_DataCopy.txt"
 
 # Delete destination file if it exists
 if os.path.exists(DEST_FILE):
@@ -21,5 +21,5 @@ with open(SOURCE_FILE, "r") as src, open(DEST_FILE, "a") as dest:
             if line:
                 dest.write(line)
                 dest.flush()  # Make sure it's written to disk immediately
-                # print("Copied line:", line.strip())
-        time.sleep(0.1)
+                print("Copied line:", line.strip())
+        time.sleep(0.08)
