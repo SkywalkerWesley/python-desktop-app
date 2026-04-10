@@ -42,7 +42,8 @@ Module 4 can simply be run and will automatically create a folder with files con
 5. Submit a pull request :D
 
 ## Additional Documentation
-
+build basket scrict:
+pyinstaller --name LabView_module_1 --onefile --windowed --paths . --paths Code Code\Module_Main_1_3\Application\mainUI\mian.py --add-data "Code\Module_Main_1_3\Application\mainUI\spinner50px.gif;Code/Module_Main_1_3/Application/mainUI"
 
 
 ## License
