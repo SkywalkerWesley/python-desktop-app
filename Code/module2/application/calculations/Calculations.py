@@ -1,13 +1,3 @@
-
-"""
-__author__ = "Ritik Agarwal, Zoe Parker"
-__credits__ = ["Ritik Agarwal", "Zoe Parker"]
-__version__ = "1.0.0"
-__maintainer__ = ""
-__email__ = ["agarwal.ritik1101@gmail.com", "zoeparker@comcast.net"]
-__status__ = "Completed"
-"""
-
 from statistics import mean
 
 class Calculations:
@@ -145,7 +135,7 @@ class Calculations:
         result = o2Cal * o2Measured
         return result
 
-    
+    @staticmethod
     def calculateIntercept(dataPoints, slope):
         """
         Calculates and returns the y-intercept of a line (given more than one point)
