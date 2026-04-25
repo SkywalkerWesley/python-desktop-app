@@ -2,6 +2,10 @@ import os
 import shutil
 import time
 
+""" Copy's Acquisition folder to test folder contents in a way similar to the Machine
+    run this program then selcect the test folder as the acq folder in the Lab view program
+    """
+
 source_folder = r"Acquisition-4971"
 
 destination_folder = r"test"

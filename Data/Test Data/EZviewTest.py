@@ -2,6 +2,10 @@
 import time
 import os
 
+""" Copy's EZView file line by line to EZView DataCopy in a way similar to the Machine
+    run this program then selcect the EZview data copy file as the EZview folder in the Lab view program
+    """
+
 SOURCE_FILE = "Data/Test Data/EZView_DataGood.txt"
 DEST_FILE = "Data/Test Data/EZView_DataCopy.txt"
 
